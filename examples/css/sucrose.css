@@ -9,11 +9,6 @@
 .sc-background {
   fill: #FFF;
 }
-.sc-image-canvas {
-  visibility: hidden;
-  position: absolute;
-  left: -10000px;
-}
 .sc-chart-background {
   fill: transparent;
   stroke-width: 0.5px;
@@ -71,20 +66,6 @@ text.sc-title {
   left: -10000px;
   width: 720px;
   height: 480px;
-}
-svg.sc-chart-print text {
-  font-size: 15px;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-svg.sc-chart-print .sc-y.sc-axis text,
-svg.sc-chart-print .sc-x.sc-axis text {
-  font-size: 13px;
-}
-svg.sc-chart-print text.sc-title {
-  font-size: 15px;
-}
-svg.sc-chart-print .sc-legend text {
-  font-size: 13px;
 }
 /***********
 * Colors

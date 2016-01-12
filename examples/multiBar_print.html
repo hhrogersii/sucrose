@@ -17,7 +17,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=320">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Pie Chart</title>
+    <title>Multibar Chart</title>
     <link rel="stylesheet" href="css/sucrose.css">
     <style>
       .sc-chart,
@@ -35,7 +35,7 @@
   </head>
   <body>
     <div class="sc-demo">
-      <div id="chart" class="sc-chart sc-chart-pie" style="width:640px;height:400px">
+      <div id="chart" class="sc-chart sc-chart-multibar" style="width:640px;height:400px">
         <svg></svg>
       </div>
       <div>
@@ -45,29 +45,35 @@
 
 <script src="js/jquery-2.1.4.min.js"></script>
 <script src="js/lib.min.js"></script>
+
 <script src="js/d3.min.js"></script>
 <script src="js/sucrose.min.js"></script>
-<script src="js/app.min.js"></script>
 
 <script>
-    var chart = sucrose.models.pieChart()
-          .showTitle(true)
-          .colorData('default')
-          .showLabels(true)
-          .donut(true)
-          .donutLabelsOutside(true)
-          .donutRatio(0.447)
-          .hole(10)
-          .tooltipContent(function(key, x, y, e, graph) {
-             return '<p>Stage: <b>' + key + '</b></p>' +
-                    '<p>Amount: <b>$' + parseInt(y) + 'K</b></p>' +
-                    '<p>Percent: <b>' + x + '%</b></p>';
-           });
+    var chart = sucrose.models.multiBarChart()
+          .showTitle(false)
+          .showControls(true)
+          .showValues(false)
+          .stacked(true)
+          //.colorData('graduated', {c1: '#e8e2ca', c2: '#3e6c0a', l: horizbar_data.data.length})
+          //.colorData( 'class' )
+          //.colorData( 'default' )
+          //.rotateTicks(30)
+          //.forceY([0,400]).forceX([0,6]);
+          .width(640)
+          .height(400)
+          .tooltips(false);
+
+    chart.xAxis
+      .axisLabel('This is x-Axis');
+
+    chart.yAxis
+      .axisLabel('This is y-Axis');
 
     chart.legend
         .showAll(true);
 
-    d3.json('data/pie_data.json', function(data) {
+    d3.json('data/multibar_data.json', function(data) {
         d3.select('#chart svg')
             .datum(data)
             .call(chart);

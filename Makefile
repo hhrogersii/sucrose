@@ -39,9 +39,13 @@ LIB_FILES = \
 	./examples/js/lib/store2.min.js
 
 APP_FILES = \
-	./examples/js/main.js \
-	./examples/js/charts.js \
-	./examples/js/translate.js
+	./examples/js/app/intro.js \
+	./examples/js/app/main.js \
+	./examples/js/app/charts.js \
+	./examples/js/app/translate.js \
+	./examples/js/app/loader.js \
+	./examples/js/app/outro.js \
+	./examples/js/app/saveimage.js
 
 CSS_FILES = \
 	src/less/sucrose.less
@@ -100,4 +104,5 @@ examples:
 	rm -f ./examples/js/lib.min.js
 	cat $(LIB_FILES) | $(JS_COMPILER) >> ./examples/js/lib.min.js
 	rm -f ./examples/js/app.min.js
+	cat $(APP_FILES) >> ./examples/js/app.js
 	cat $(APP_FILES) | $(JS_COMPILER) >> ./examples/js/app.min.js

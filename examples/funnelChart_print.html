@@ -21,14 +21,8 @@
     <link rel="stylesheet" href="css/sucrose.css">
     <style>
       .sc-chart,
-      .sc-print,
-      .sc-image-canvas {
+      .sc-print {
         border: 1px solid black;
-      }
-      .sc-image-canvas {
-         visibility: visible;
-         position: relative;
-         left: 0;
       }
       .sc-print {
         visibility: visible;
@@ -41,16 +35,11 @@
   </head>
   <body>
     <div class="sc-demo">
-      <div id="chart" class="sc-chart sc-chart-funnel" style="width:400px;height:400px">
+      <div id="chart" class="sc-chart sc-chart-funnel" style="width:640px;height:400px">
         <svg></svg>
       </div>
-
-      <div id="d3_test_print" class="sc-print sc-chart sc-chart-funnel" style="width:720px;height:480px">
-        <svg class="sc-chart-print"></svg>
-      </div>
-
-      <div class="canvas-wrapper">
-        <canvas id="canvas_test" width="1440" height="960" class="sc-image-canvas"></canvas>
+      <div>
+        <button id="image-downloader">Download Image</button>
       </div>
     </div>
 
@@ -61,7 +50,6 @@
 <script src="js/sucrose.min.js"></script>
 
 <script>
-    var json = [];
     var chart = sucrose.models.funnelChart()
           .showTitle(true)
           .colorData('default')
@@ -78,89 +66,87 @@
     chart.legend
         .showAll(true);
 
-    d3.json("data/funnel_data.json", function(data) {
-
-        this.json = data;
-
+    d3.json('data/funnel_data.json', function(data) {
         d3.select('#chart svg')
             .datum(data)
             .call(chart);
 
+        d3.select('#chart').on('click', chart.dispatch.chartClick);
+
         sucrose.utils.windowResize(chart.update);
 
-        saveImageFile('test', 'test.js', 'png');
+        $('#image-downloader').on('click', generateImage);
     });
 
+    //https://developer.mozilla.org/en-US/docs/Web/API/Window.btoa
+    //http://techslides.com/save-svg-as-an-image/
+    //http://tutorials.jenkov.com/svg/svg-and-css.html
+    //https://developer.mozilla.org/en-US/docs/Web/HTML/Canvas/Drawing_DOM_objects_into_a_canvas
+    //http://spin.atomicobject.com/2014/01/21/convert-svg-to-png/
+    //https://github.com/exupero/saveSvgAsPng
 
+    function generateImage(e) {
+        e.preventDefault();
+        e.stopPropagation();
 
-    function saveImageFile(id, jsonfilename, imageExt, saveTo, complete) {
-        var self = this;
-        var d3ChartId = '#d3_' + id + '_print' || 'd3_c3090c86-2b12-a65e-967f-51b642ac6165_print';
-        var canvasChartId = 'canvas_' + id || 'canvas_c3090c86-2b12-a65e-967f-51b642ac6165';
-        var svgChartId = 'svg_' + id || 'canvas_c3090c86-2b12-a65e-967f-51b642ac6165';
-
-        var completeCallback = complete || function() {
-            //self.renderChart(id);
-        };
-
-        d3.select(d3ChartId + ' svg').remove();
-
-        d3.select(d3ChartId)
-            .append('svg')
-            .attr('id', svgChartId)
-            .attr('class', 'sc-chart-print')
-            .datum(this.json)
-            .call(this.chart);
-
-        d3.select(d3ChartId).selectAll('.sc-axis line')
-          .style('stroke', '#000')
-          .style('stroke-width', 1)
-          .style('stroke-opacity', 1);
-
-        var parts = jsonfilename.split('/'),
-            filename = parts[parts.length - 1].replace('.js', '.' + imageExt),
-            oCanvas = document.getElementById(canvasChartId),
-            d3Container = document.getElementById(svgChartId),
-            serializer = new XMLSerializer(),
-            saveToUrl = saveTo || 'http://localhost/builds/sugar7/ent/sugarcrm/index.php?action=DynamicAction&DynamicAction=saveImage&module=Charts&to_pdf=1';
-
-        if (!oCanvas) {
-            return;
+        function reEncode(data) {
+          data = encodeURIComponent(data);
+          data = data.replace(/%([0-9A-F]{2})/g, function(match, p1) {
+            var c = String.fromCharCode('0x' + p1);
+            return c === '%' ? '%25' : c;
+          });
+          return decodeURIComponent(data);
+        }
+        function openTab(url) {
+            var a = window.document.createElement('a');
+            var evt = new MouseEvent('click', {
+                  bubbles: false,
+                  cancelable: true,
+                  view: window,
+                });
+            a.target = '_blank';
+            a.href = url;
+            a.download = 'download.png';
+            a.addEventListener('click', function(e) {
+              a.parentNode.removeChild(a);
+            });
+            // document.body.appendChild(a);
+            a.dispatchEvent(evt);
         }
 
         $.ajax({
             url: 'css/sucrose.css',
             dataType: 'text',
             success: function(css) {
-                var svg = serializer.serializeToString(d3Container),
-                    svgAttr = ' xmlns:xlink="http://www.w3.org/1999/xlink" width="720" height="480" viewBox="0 0 1440 960">',
-                    cssCdata = '<style type="text/css"><![CDATA[' + css.trim() + ']]></style>',
-                    d3Chart = svg.replace(/><g class="sucrose/, (svgAttr + cssCdata + '<g class="sucrose'));
+                var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+                var dom = $('#chart svg').html();
+                var svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="640" height="400" viewBox="0 0 640 400" class="sc-chart-print">' +
+                            '<defs><style rel="stylesheet/less" type="text/css"><![CDATA[' + css + ']]></style></defs>' + dom + '</svg>';
 
-                var canvgOptions = {
-                        ignoreMouse: true,
-                        ignoreAnimation: false,
-                        ignoreClear: true,
-                        ignoreDimensions: true,
-                        scaleWidth: 1440,
-                        scaleHeight: 960,
-                        renderCallback: function() {
-                            var uri = oCanvas.toDataURL((imageExt === 'jpg' ? 'image/jpeg' : 'image/png'));
-                            //$.post(saveToUrl, {imageStr: uri, filename: filename}, "json");
-                            //var ctx = oCanvas.getContext('2d');
-                            //ctx.clearRect(0, 0, 1440, 960);
-                        }
-                    };
+                var url = 'data:image/svg+xml;charset=utf-8;base64,' + window.btoa(reEncode(svg));
 
-                setTimeout(function() {
-                  canvg(canvasChartId, d3Chart, canvgOptions);
-                }, 1000);
+                var canvas = document.createElement('canvas');
+                    canvas.width = 640;
+                    canvas.height = 400;
 
-            },
-            complete: completeCallback
+                var ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                var img = new Image();
+
+                img.onload = function () {
+                    var uri;
+                    ctx.drawImage(img, 0, 0);
+                    uri = canvas.toDataURL('image/png');
+                    openTab(uri);
+                    ctx.clearRect(0, 0, 640, 400);
+                }
+
+                img.src = url;
+            }
         });
     }
-
 </script>
 </body>
 </html>
