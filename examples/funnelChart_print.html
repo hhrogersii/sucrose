@@ -12,63 +12,63 @@
 -->
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=320">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>Funnel Chart</title>
-  <link rel="stylesheet/less" type="text/css" href="../src/less/sucrose.less">
-  <link rel="stylesheet/less" type="text/css" href="less/styles.less">
-  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js" type="text/javascript"></script>
-  <style>
-    .sc-chart-print {
-      visibility: visible;
-      position: relative;
-      left: 0;
-    }
-    .sc-image-canvas {
-       visibility: visible;
-       position: relative;
-       left: 0;
-    }
-  </style>
-</head>
-<body class="full-screen">
-  <div class="sc-demo">
-    <div id="chart1" class="sc-chart sc-chart-pie" style="width:400px;height:400px">
-      <svg></svg>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=320">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Funnel Chart</title>
+    <link rel="stylesheet" href="css/sucrose.css">
+    <style>
+      .sc-chart,
+      .sc-print,
+      .sc-image-canvas {
+        border: 1px solid black;
+      }
+      .sc-image-canvas {
+         visibility: visible;
+         position: relative;
+         left: 0;
+      }
+      .sc-print {
+        visibility: visible;
+        position: relative !important;
+        left: 0;
+        width: 720px;
+        height: 480px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sc-demo">
+      <div id="chart" class="sc-chart sc-chart-funnel" style="width:400px;height:400px">
+        <svg></svg>
+      </div>
+
+      <div id="d3_test_print" class="sc-print sc-chart sc-chart-funnel" style="width:720px;height:480px">
+        <svg class="sc-chart-print"></svg>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="canvas_test" width="1440" height="960" class="sc-image-canvas"></canvas>
+      </div>
     </div>
-    <div id="d3_test_print" class="sc-chart sc-chart-print sc-chart-pie" style="width: 720px; height: 480px;"></div>
-    <canvas id="canvas_test" width="1440" height="960" class="sc-image-canvas"></canvas>
-  </div>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
+<script src="js/jquery-2.1.4.min.js"></script>
+<script src="js/lib.min.js"></script>
 
-<script src="js/rgbcolor.js"></script>
-<script src="js/StackBlur.js"></script>
-<script src="js/canvg.js"></script>
-
-<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.10/d3.min.js"></script>
-<script src="../sucrose.js"></script>
-<script src="../src/models/axis.js"></script>
-<script src="../src/models/legend.js"></script>
-<script src="../src/models/funnel.js"></script>
-<script src="../src/models/funnelChart.js"></script>
+<script src="js/d3.min.js"></script>
+<script src="js/sucrose.min.js"></script>
 
 <script>
     var json = [];
     var chart = sucrose.models.funnelChart()
           .showTitle(true)
+          .colorData('default')
           .tooltips(true)
           .clipEdge(false)
           .delay(1)
           .fmtValueLabel(function(d) { return '$' + d.value + 'K'; })
-          //.colorData( 'graduated', {c1: '#12448f', c2: '#deeeff', l: funnel_data.data.length} )
-          .colorData('class', {step:2})
-          //.colorData('default')
           .tooltipContent(function(key, x, y, e, graph) {
              return '<p>Stage: <b>' + key + '</b></p>' +
                     '<p>Amount: <b>$' + parseInt(y) + 'K</b></p>' +
@@ -77,6 +77,21 @@
 
     chart.legend
         .showAll(true);
+
+    d3.json("data/funnel_data.json", function(data) {
+
+        this.json = data;
+
+        d3.select('#chart svg')
+            .datum(data)
+            .call(chart);
+
+        sucrose.utils.windowResize(chart.update);
+
+        saveImageFile('test', 'test.js', 'png');
+    });
+
+
 
     function saveImageFile(id, jsonfilename, imageExt, saveTo, complete) {
         var self = this;
@@ -93,6 +108,7 @@
         d3.select(d3ChartId)
             .append('svg')
             .attr('id', svgChartId)
+            .attr('class', 'sc-chart-print')
             .datum(this.json)
             .call(this.chart);
 
@@ -119,8 +135,9 @@
                 var svg = serializer.serializeToString(d3Container),
                     svgAttr = ' xmlns:xlink="http://www.w3.org/1999/xlink" width="720" height="480" viewBox="0 0 1440 960">',
                     cssCdata = '<style type="text/css"><![CDATA[' + css.trim() + ']]></style>',
-                    d3Chart = svg.replace(/><g class="sucrose/, (svgAttr + cssCdata + '<g class="sucrose')),
-                    canvgOptions = {
+                    d3Chart = svg.replace(/><g class="sucrose/, (svgAttr + cssCdata + '<g class="sucrose'));
+
+                var canvgOptions = {
                         ignoreMouse: true,
                         ignoreAnimation: false,
                         ignoreClear: true,
@@ -144,18 +161,6 @@
         });
     }
 
-    d3.json("data/funnel_data.json", function(data) {
-
-        this.json = data;
-
-        d3.select('#chart1 svg')
-            .datum(data)
-            .call(chart);
-
-        sucrose.utils.windowResize(chart.update);
-
-        saveImageFile('test', 'test.js', 'png');
-    });
 </script>
 </body>
 </html>

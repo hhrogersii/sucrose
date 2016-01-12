@@ -12,34 +12,51 @@
 -->
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=320">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>Multibar Chart</title>
-  <link rel="stylesheet" href="css/sucrose.css">
-</head>
-<body>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=320">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Multibar Chart</title>
+    <link rel="stylesheet" href="css/sucrose.css">
+    <style>
+      .sc-chart,
+      .sc-print,
+      .sc-image-canvas {
+        border: 1px solid black;
+      }
+      .sc-image-canvas {
+         visibility: visible;
+         position: relative;
+         left: 0;
+      }
+      .sc-print {
+        visibility: visible;
+        position: relative !important;
+        left: 0;
+        width: 720px;
+        height: 480px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sc-demo">
+      <div id="chart" class="sc-chart sc-chart-multibar" style="width:640px;height:400px">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        </svg>
+      </div>
+      <div>
+        <button id="image-downloader">Download Image</button>
+      </div>
+    </div>
 
-  <div id="chart1" class="sc-chart sc-chart-multibar" width="640" height="400">
-    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    </svg>
-  </div>
-  <div>
-    <button id="image-downloader">Download Image</button>
-  </div>
-  <canvas id="sucrose-image-canvas" width="640" height="400" class="sucrose-image-canvas"></canvas>
+<!-- <script src="js/lib/saveSvgAsPng.js"></script> -->
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<script src="js/saveSvgAsPng.js"></script>
+<script src="js/jquery-2.1.4.min.js"></script>
+<script src="js/lib.min.js"></script>
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.10/d3.min.js"></script>
-<script src="../sucrose.js"></script>
-<script src="../src/models/axis.js"></script>
-<script src="../src/models/legend.js"></script>
-<script src="../src/models/multiBar.js"></script>
-<script src="../src/models/multiBarChart.js"></script>
+<script src="js/d3.min.js"></script>
+<script src="js/sucrose.min.js"></script>
 
 <script>
 
@@ -66,23 +83,20 @@
     chart.legend
         .showAll(true);
 
-    d3.json("data/multibar_data.json", function(data) {
-        chart
-          .colorData('graduated', {c1: '#e8e2ca', c2: '#336699', l: data.data.length});
-
-        d3.select('#chart1 svg')
+    d3.json('data/multibar_data.json', function(data) {
+        d3.select('#chart svg')
             .datum(data)
             .call(chart);
 
-        d3.select('#chart1').on('click', chart.dispatch.chartClick);
+        d3.select('#chart').on('click', chart.dispatch.chartClick);
 
         sucrose.utils.windowResize(chart.update);
 
-        // $('#image-downloader').on('click', generateImage);
-        $('#image-downloader').on('click', function(){
-          var svg = $('#chart1 svg')[0];
-          saveSvgAsPng(svg, 'test.png');
-        });
+        $('#image-downloader').on('click', generateImage);
+        // $('#image-downloader').on('click', function(){
+        //   var svg = $('#chart svg')[0];
+        //   saveSvgAsPng(svg, 'test.png');
+        // });
     });
 
     //https://developer.mozilla.org/en-US/docs/Web/API/Window.btoa
@@ -90,40 +104,78 @@
     //http://tutorials.jenkov.com/svg/svg-and-css.html
     //https://developer.mozilla.org/en-US/docs/Web/HTML/Canvas/Drawing_DOM_objects_into_a_canvas
     //http://spin.atomicobject.com/2014/01/21/convert-svg-to-png/
+    //https://github.com/exupero/saveSvgAsPng
 
     function generateImage(e) {
         e.preventDefault();
+        e.stopPropagation();
 
-        var canvas = document.getElementById('sucrose-image-canvas'),
-            ctx    = canvas.getContext('2d'),
-            DOMURL = window.URL || window.webkitURL || window,
-            img    = new Image();
+        function reEncode(data) {
+          data = encodeURIComponent(data);
+          data = data.replace(/%([0-9A-F]{2})/g, function(match, p1) {
+            var c = String.fromCharCode('0x' + p1);
+            return c === '%' ? '%25' : c;
+          });
+          return decodeURIComponent(data);
+        }
+        function openTab(url) {
+            // Create link in memory
+            var a = window.document.createElement("a");
+            a.target = '_blank';
+            a.href = url;
+
+            // Dispatch fake click
+            var e = window.document.createEvent("MouseEvents");
+            e.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            a.dispatchEvent(e);
+        }
 
         $.ajax({
-            url: "css/sucrose.css",
-            dataType: "text",
+            url: 'css/sucrose.css',
+            dataType: 'text',
             success: function(css) {
-                var dom = $('#chart1 svg').html(),
-                    data = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">' +
-                            '<style rel="stylesheet/less" type="text/css"><![CDATA[' + css + ']]></style>' + dom + '</svg>',
-                    svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'}),
-                    url = DOMURL.createObjectURL(svg);
+                var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+                var dom = $('#chart svg').html();
+                var svg = doctype + '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="640" height="400" viewBox="0 0 640 400" class="sc-chart-print">' +
+                            '<defs><style rel="stylesheet/less" type="text/css"><![CDATA[' + css + ']]></style></defs>' + dom + '</svg>';
+
+                // var blob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'}),
+                // var DOMURL = window.URL || window.webkitURL || window;
+                // var url = DOMURL.createObjectURL(blob);
+
+                var url = 'data:image/svg+xml;charset=utf-8;base64,' + window.btoa(reEncode(svg));
+
+                var canvas = document.createElement('canvas');
+                    canvas.width = 640;
+                    canvas.height = 400;
+
+                var ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                var img = new Image();
 
                 img.onload = function () {
+                    var uri, a;
+
                     ctx.drawImage(img, 0, 0);
 
-                    var uri = canvas.toDataURL("image/png");
+                    uri = canvas.toDataURL('image/png');
 
-                    window.open(uri, '_blank');
+                    a = window.document.createElement('a');
+                    a.download = 'download.png';
+                    a.href = uri;
+                    a.target = '_blank';
+                    document.body.appendChild(a);
+                    a.addEventListener('click', function(e) {
+                      a.parentNode.removeChild(a);
+                    });
+                    a.click();
 
                     ctx.clearRect(0, 0, 640, 400);
-                    // a = document.createElement("a");
-                    // a.download = "sample.png";
-                    // a.href = canvasdata;
-                    // a.click();
-                    //$('body').append(img);
 
-                    DOMURL.revokeObjectURL(url);
+                    //$('body').append(img);
+                    // DOMURL.revokeObjectURL(url);
                 }
 
                 img.src = url;

@@ -30,9 +30,9 @@ JS_FILES = \
 	src/outro.js
 
 LIB_FILES = \
-	./node_modules/canvg/canvg.js \
 	./node_modules/canvg/rgbcolor.js \
 	./node_modules/canvg/StackBlur.js \
+	./node_modules/canvg/canvg.js \
 	./examples/js/lib/micro-query.js \
 	./examples/js/lib/jquery-ui.min.js \
 	./examples/js/lib/fastclick.js \
