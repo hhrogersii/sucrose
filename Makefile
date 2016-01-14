@@ -38,7 +38,7 @@ D3_FILES = \
 	lib/d3.js
 
 JS_COMPILER = \
-	uglifyjs
+	node_modules/uglify-js/bin/uglifyjs
 
 CSS_COMPILER = \
 	node_modules/less/bin/lessc
@@ -48,31 +48,54 @@ CSS_MINIFIER = \
 
 .PHONY: examples
 
-all: sucrose.js sucrose.min.js sucrose.css sucrose.min.css
-sucrose.js: $(JS_FILES)
-sucrose.min.js: $(JS_FILES)
-d3.min.js: $(D3_FILES)
-sucrose.css: $(CSS_FILES)
-sucrose.min.css: sucrose.css
 
-examples:
+#PRODUCTION
+
+install: npm-prod dependencies
+
+npm-prod:
 	npm i --production
-	cd examples && npm i --production
-	cd examples && make all
+
+dependencies: clean-dependencies
+	cp node_modules/d3/d3.min.js d3.min.js
+	cp node_modules/topojson/topojson.min.js topojson.min.js
+	cp node_modules/queue-async/queue.min.js queue.min.js
+
+clean-dependencies:
+	rm -rf d3.min.js topojson.min.js queue.min.js
+
+
+#DEVELOPMENT
+
+install-dev: npm-dev dependencies all
+
+npm-dev:
+	npm i
+
+all: sucrose.js sucrose.min.js sucrose.css sucrose.min.css
+
+# Javascript
+
+sucrose.js: $(JS_FILES)
+sucrose.min.js: sucrose.js
 
 sucrose.js: Makefile
-	rm -f $@
-	cat header $(filter %.js,$^) >> $@
-
-sucrose.min.js: Makefile
 	rm -f ./$@
-	cat $(filter %.js,$^) | $(JS_COMPILER) >> ./$@
+	cat header $(filter %.js,$^) >> ./$@
+
+sucrose.min.js:
+	rm -f ./$@
+	cat $^ | $(JS_COMPILER) >> ./$@
 	cat header ./$@ > temp
 	mv temp ./$@
 
-d3.min.js: Makefile
-	rm -f ./lib/$@
-	cat $(filter %.js,$^) | $(JS_COMPILER) >> ./lib/$@
+clean-js:
+	rm -rf sucrose.js sucrose.min.js
+
+# Stylesheets
+
+sucrose.css: $(CSS_FILES)
+sucrose.min.css: sucrose.css
 
 sucrose.css: Makefile
 	rm -f ./$@
@@ -80,11 +103,32 @@ sucrose.css: Makefile
 	cat header ./$@ > temp
 	mv temp ./$@
 
-sucrose.min.css: Makefile
+sucrose.min.css:
 	rm -f ./$@
-	node $(CSS_MINIFIER) -o ./$@ sucrose.css
+	node $(CSS_MINIFIER) -o ./$@ $^
 	cat header ./$@ > temp
 	mv temp ./$@
 
-clean:
-	rm -rf sucrose.js sucrose.min.js sucrose.css sucrose.min.css
+clean-css:
+	rm -rf sucrose.css sucrose.min.css
+
+# Dependencies
+
+d3.min.js: $(D3_FILES)
+
+d3.min.js:
+	rm -f ./lib/$@
+	cat $(filter %.js,$^) | $(JS_COMPILER) >> ./lib/$@
+
+
+# EXAMPLES
+
+examples: npm-prod
+	cd examples && make install-prod
+
+examples-dev: npm-dev
+	cd examples && make install-dev
+
+
+reset:
+	git clean -dfx
