@@ -13,6 +13,7 @@ sucrose.models.globeChart = function() {
   // https://github.com/mbostock/world-atlas
   // https://github.com/papandreou/node-cldr
   // https://github.com/melalj/topojson-map-generator
+  // http://bl.ocks.org/mbostock/248bac3b8e354a9103c4#cubicInOut
 
   //============================================================
   // Public Variables with Default Settings
@@ -38,6 +39,11 @@ sucrose.models.globeChart = function() {
       },
       showLabels = true,
       autoSpin = false,
+      showGraticule = true,
+      valueColor = false,
+      color = function(d, i) { return sucrose.utils.defaultColor()(d, i); },
+      classes = function(d, i) { return 'sc-group sc-series-' + i; },
+      fill = color,
       dispatch = d3.dispatch('chartClick', 'elementClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState', 'elementDblClick', 'elementMouseover', 'elementMouseout');
 
 
@@ -157,16 +163,6 @@ sucrose.models.globeChart = function() {
             legendHeight = 0,
             trans = '';
 
-        var colorRange = function (r) {
-              var max = d3.max(d3.values(r));
-              return d3.scale.linear().domain([0, max]).range(['#99CCFF', '#336699']);
-            },
-            color = colorRange([0]),
-            fill = function (d) {
-              var r = amount(d);
-              return r ? color(r) : '';
-            };
-
         // Globe variables
         var m0,
             o0,
@@ -227,6 +223,14 @@ sucrose.models.globeChart = function() {
           .attr('d', path);
         var sphere = d3.select('.sphere');
 
+        if (showGraticule) {
+          globeEnter.append('path')
+              .datum(graticule)
+              .attr('class', 'graticule')
+              .attr('d', path);
+          var grid = d3.select('.graticule');
+        }
+
         // zoom and pan
         var zoom = d3.behavior.zoom()
               .on('zoom', function () {
@@ -278,7 +282,16 @@ sucrose.models.globeChart = function() {
               .data(data)
             .enter().append('path')
               .attr('d', clip)
-              .style('fill', fill);
+              .style('fill', function (d) {
+                var i = null;
+                if (valueColor) {
+                  var r = amount(d);
+                  i = r ? r : null;
+                } else if (d.properties.mapcolor13) {
+                  i = d.properties.mapcolor13;
+                }
+                return fill(d, i);
+              });
 
           countries.on('click', function (d) {
               if (active_country == d3.select(this)) {
@@ -367,7 +380,7 @@ sucrose.models.globeChart = function() {
           }
           results = results.parent;
           active_country.style('display', 'inline');
-          color = colorRange(results);
+          colorRange = colorRange(results);
           d3.select('.states').remove();
           active_country = false;
           country_view = {rotate: [null, null], scale: null, zoom: null};
@@ -455,15 +468,31 @@ sucrose.models.globeChart = function() {
         }
         var m1 = [d3.event.pageX, d3.event.pageY],
             //o1 = [o0[0] + (m0[0] - m1[0]) / 4, o0[1] - (m0[1] - m1[1]) / 4];
-            o1 = [o0[0] - (m0[0] - m1[0]) / 4, (country_view.rotate[1] || world_view.rotate[1])];
+            o1 = [o0[0] + (m1[0] - m0[0]) / 4, (country_view.rotate[1] || world_view.rotate[1])];
         rotate(o1);
       }
 
       function mouseup() {
-        if (m0) {
-          // mousemove();
-          m0 = null;
+        if (!m0) {
+          return;
         }
+
+        var m1 = [d3.event.pageX, d3.event.pageY],
+            decay = 0.999,
+            rate = (m1[0] - m0[0]) / 4,
+            ease = d3.ease('cubic', 'out'),
+            o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
+
+        m0 = null;
+
+        d3.timer(function(elapsed) {
+          decay = ease(decay);
+          console.log(decay);
+          o1[0] += rate * decay;
+          rotate(o1);
+          return !decay;
+        });
+        // mousemove();
       }
 
       dispatch.on('tooltipShow', function(eo) {
@@ -501,14 +530,14 @@ sucrose.models.globeChart = function() {
           container.transition().call(chart);
         });
 
-      dispatch.on('chartClick', function() {
-          if (controls.enabled()) {
-            controls.dispatch.closeMenu();
-          }
-          if (legend.enabled()) {
-            legend.dispatch.closeMenu();
-          }
-        });
+      // dispatch.on('chartClick', function() {
+      //     if (controls.enabled()) {
+      //       controls.dispatch.closeMenu();
+      //     }
+      //     if (legend.enabled()) {
+      //       legend.dispatch.closeMenu();
+      //     }
+      //   });
 
     });
 
@@ -528,50 +557,39 @@ sucrose.models.globeChart = function() {
   chart.colorData = function(_) {
     var type = arguments[0],
         params = arguments[1] || {};
-    var color = function(d, i) {
-          return sucrose.utils.defaultColor()(d, d.series);
-        };
-    var classes = function(d, i) {
-          return 'sc-group sc-series-' + d.series;
-        };
+
+    if (params.gradient) {
+      fill = function(d, i) {
+        return globe.gradient(d, i);
+      };
+      return chart;
+    }
 
     switch (type) {
       case 'graduated':
-        color = function(d, i) {
-          return d3.interpolateHsl(d3.rgb(params.c1), d3.rgb(params.c2))(d.series / params.l);
+        color = function(i) {
+          return d3.interpolateHsl(d3.rgb(params.c1), d3.rgb(params.c2))(i);
         };
         break;
       case 'class':
         color = function() {
           return 'inherit';
         };
-        classes = function(d, i) {
-          var iClass = (d.series * (params.step || 1)) % 14;
-          iClass = (iClass > 9 ? '' : '0') + iClass;
-          return 'sc-group sc-series-' + d.series + ' sc-fill' + iClass;
+        classes = function(i) {
+          var iClass = (i * (params.step || 1)) % 14;
+          iClass = (iClass > 9 ? '' : '0') + iClass; //TODO: use d3.formatNumber
+          return 'sc-group sc-series-' + i + ' sc-fill' + iClass;
         };
         break;
       case 'data':
         color = function(d, i) {
-          return d.classes ? 'inherit' : d.color || sucrose.utils.defaultColor()(d, d.series);
+          return d.classes ? 'inherit' : d.color || sucrose.utils.defaultColor()(d, i);
         };
         classes = function(d, i) {
-          return 'sc-group sc-series-' + d.series + (d.classes ? ' ' + d.classes : '');
+          return 'sc-group sc-series-' + i + (d.classes ? ' ' + d.classes : '');
         };
         break;
     }
-
-    var fill = (!params.gradient) ? color : function(d, i) {
-      var p = {orientation: params.orientation || (vertical ? 'vertical' : 'horizontal'), position: params.position || 'middle'};
-      return multibar.gradient(d, d.series, p);
-    };
-
-    // multibar.color(color);
-    // multibar.fill(fill);
-    // multibar.classes(classes);
-
-    // legend.color(color);
-    // legend.classes(classes);
 
     return chart;
   };
