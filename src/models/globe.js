@@ -163,10 +163,7 @@ sucrose.models.globeChart = function() {
             trans = '';
 
         // Globe variables
-        var m0,
-            o0,
-            t0,
-            countries,
+        var countries,
             active_country = false,
             world_map = [],
             country_map = {},
@@ -265,7 +262,7 @@ sucrose.models.globeChart = function() {
 
             loadChart(world_map, 'countries');
             if (autoSpin) {
-                iRotation = setInterval(spin, 10);
+              iRotation = setInterval(spin, 10);
             }
           });
 
@@ -427,6 +424,13 @@ sucrose.models.globeChart = function() {
       // Event Handling/Dispatching (in chart's scope)
       //------------------------------------------------------------
 
+      var ease = d3.ease('cubic', 'out'),
+          timerId = [],
+          tooltips0 = tooltips,
+          m0,
+          o0,
+          t0;
+
       chart.resize = function () {
         renderWidth = width || parseInt(container.style('width'), 10) || 960;
         renderHeight = height || parseInt(container.style('height'), 10) || 400;
@@ -447,6 +451,7 @@ sucrose.models.globeChart = function() {
 
         if (tooltips) {
           sucrose.tooltip.cleanup();
+          tooltips = false;
         }
         if (autoSpin) {
           clearInterval(iRotation);
@@ -458,31 +463,48 @@ sucrose.models.globeChart = function() {
           return;
         }
         var m1 = [d3.event.pageX, d3.event.pageY],
-            //o1 = [o0[0] + (m0[0] - m1[0]) / 4, o0[1] - (m0[1] - m1[1]) / 4];
-            o1 = [o0[0] + (m1[0] - m0[0]) / 4, (country_view.rotate[1] || world_view.rotate[1])];
+            rate = (m1[0] - m0[0]) / 4,
+            decay = 0.999,
+            o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
+console.log(rate)
+        t0 = m1;
         rotate(o1);
+        if (Math.abs(rate) > 2) {
+          d3.timer(createTimerCallback());
+        }
+
+        function createTimerCallback() {
+          var t1 = m1;
+
+          return function(elapsed) {
+            if (t0 !== t1) {
+              // console.log('old: ', timerId, t1)
+              return true;
+            }
+            // console.log('lastest: ', timerId, t1)
+            decay -= (decay - ease(decay)) / 3;
+            o1[0] += rate * decay;
+            rotate(o1);
+            return !decay;
+          };
+        }
       }
 
       function mouseup() {
-        if (!m0) {
-          return;
-        }
-
-        var m1 = [d3.event.pageX, d3.event.pageY],
-            decay = 0.999,
-            rate = (m1[0] - m0[0]) / 4,
-            ease = d3.ease('cubic', 'out'),
-            o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
-
         m0 = null;
+        tooltips = tooltips0;
 
-        d3.timer(function(elapsed) {
-          decay = ease(decay);
-          console.log(decay);
-          o1[0] += rate * decay;
-          rotate(o1);
-          return !decay;
-        });
+        // var m1 = [d3.event.pageX, d3.event.pageY],
+        //     decay = 0.999,
+        //     rate = (m1[0] - m0[0]) / 4,
+        //     o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
+
+        // d3.timer(function(elapsed) {
+        //   decay = ease(decay);
+        //   o1[0] += rate * decay;
+        //   rotate(o1);
+        //   return !decay;
+        // });
         // mousemove();
       }
 
