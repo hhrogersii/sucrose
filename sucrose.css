@@ -722,11 +722,11 @@ text.sc-pie-hole-label {
   pointer-events: all;
 }
 .sc-chart-globe .globe {
-  fill: #6699cc;
+  fill: #69C;
   fill-opacity: .5;
 }
 .sc-chart-globe .sphere {
-  fill: #dbe4f0;
+  fill: #DBE4F0;
 }
 .sc-chart-globe .graticule {
   fill: none;
@@ -734,8 +734,10 @@ text.sc-pie-hole-label {
   stroke-width: .5px;
   stroke-opacity: .5;
 }
-.sc-chart-globe .countries path {
+.sc-chart-globe .countries {
   fill: #AAA;
+}
+.sc-chart-globe .countries path {
   stroke: #fff;
 }
 .sc-chart-globe .states path {
