@@ -35,9 +35,8 @@
       </div>
     </div>
 
-<script src="js/jquery-2.1.4.min.js"></script>
+<script src="js/jquery.min.js"></script>
 <script src="js/lib.min.js"></script>
-<script src="js/sugar.min.js"></script>
 <script src="js/jquerymy.min.js"></script>
 
 <script src="js/d3.min.js"></script>
@@ -65,6 +64,7 @@
   // Calculate the maximum balue so that we can generate a colour scale.
   var colorRange = function (r) {
           var max = d3.max(d3.values(r));
+          console.log(max)
           return d3.scale.linear().domain([0, max]).range(['#99CCFF', '#336699']);
       },
       color = colorRange(results),

@@ -40,10 +40,11 @@ sucrose.models.globeChart = function() {
       showLabels = true,
       autoSpin = false,
       showGraticule = true,
+      valueColor = false,
       color = function(d, i) { return sucrose.utils.defaultColor()(d, i); },
-      classes = function(d, i) { return 'sc-country-' + i; },
+      classes = function(d, i) { return 'sc-group sc-series-' + i; },
       fill = color,
-      dispatch = d3.dispatch('chartClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout');
+      dispatch = d3.dispatch('chartClick', 'elementClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState', 'elementDblClick', 'elementMouseover', 'elementMouseout');
 
 
   //============================================================
@@ -58,7 +59,6 @@ sucrose.models.globeChart = function() {
 
   var graticule = d3.geo.graticule();
 
-  var colorLimit = 0;
 
   function tooltipContent(d) {
     return '<p><b>' + d.name + '</b></p>' +
@@ -140,6 +140,7 @@ sucrose.models.globeChart = function() {
       //------------------------------------------------------------
       // Process data
       var results = data[0];
+
 
       //------------------------------------------------------------
       // Main chart draw
@@ -244,7 +245,6 @@ sucrose.models.globeChart = function() {
 
         sphere
           .on('click', function () {
-            console.log('click')
             unLoadCountry();
           });
 
@@ -271,19 +271,23 @@ sucrose.models.globeChart = function() {
         //------------------------------------------------------------
         // Internal functions
 
-        function loadChart(data, type) {
-          colorLimit = results._total;
+        function loadChart(data, classes) {
 
           countries = globeEnter.append('g')
-              .attr('class', type)
+              .attr('class', classes)
             .selectAll('path')
               .data(data)
             .enter().append('path')
               .attr('d', clip)
-              .attr('class', classes)
-              .style('fill', function (d, i) {
-                d.amount = amount(d);
-                return fill(d, d.properties.mapcolor13 || i);
+              .style('fill', function (d) {
+                var i = null;
+                if (valueColor) {
+                  var r = amount(d);
+                  i = r ? r : null;
+                } else if (d.properties.mapcolor13) {
+                  i = d.properties.mapcolor13;
+                }
+                return fill(d, i);
               });
 
           countries.on('click', function (d) {
@@ -335,7 +339,7 @@ sucrose.models.globeChart = function() {
               obj.parent = results;
               results = obj;
 
-              colorLimit = results._total;
+              color = colorRange(results);
 
               active_country = d3.select(this);
 
@@ -372,8 +376,8 @@ sucrose.models.globeChart = function() {
             return;
           }
           results = results.parent;
-          colorLimit = results._total;
           active_country.style('display', 'inline');
+          colorRange = colorRange(results);
           d3.select('.states').remove();
           active_country = false;
           country_view = {rotate: [null, null], scale: null, zoom: null};
@@ -384,15 +388,19 @@ sucrose.models.globeChart = function() {
         }
 
         function region_results(d) {
-          return (
-            results._values[d.id] ||
-            results._values[d.properties.name] ||
-            {"_total": 0}
-          );
+          if (results[d.id]) {
+            return results[d.id];
+          } else if (results[d.properties.name]) {
+            return results[d.properties.name];
+          }
         }
 
         function amount(d) {
-          return region_results(d)._total || 0;
+          var result = region_results(d);
+          if (result) {
+            return result._total;
+          }
+          return 0;
         }
 
         function refresh(duration) {
@@ -426,11 +434,11 @@ sucrose.models.globeChart = function() {
       //------------------------------------------------------------
 
       var ease = d3.ease('cubic', 'out'),
-          timerId = [],
           tooltips0 = tooltips,
-          m0,
-          o0,
-          t0;
+          m0 = [0, 0],
+          o0 = [0, 0],
+          t0 = [0, 0],
+          c0 = [0, 0];
 
       chart.resize = function () {
         renderWidth = width || parseInt(container.style('width'), 10) || 960;
@@ -445,10 +453,17 @@ sucrose.models.globeChart = function() {
         refresh();
       }
 
-      function mousedown() {
-console.log('mousedown');
+      function resetMouse() {
+        m0 = [0, 0];
+        o0 = [0, 0];
+        t0 = [0, 0];
+        c0 = [0, 0];
+      }
 
+      function mousedown() {
+        resetMouse();
         m0 = [d3.event.pageX, d3.event.pageY];
+        c0 = m0;
         o0 = projection.rotate();
         d3.event.preventDefault();
 
@@ -462,19 +477,24 @@ console.log('mousedown');
       }
 
       function mousemove() {
-console.log('mousemove');
-
-        if (!m0) {
+        if (!m0[0]) {
           return;
         }
-        var m1 = [d3.event.pageX, d3.event.pageY],
-            rate = (m1[0] - m0[0]) / 4,
-            decay = 0.999,
-            o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
+        var change, distance, decay, m1, o1;
+        decay = 0.999;
 
+        change = d3.event.pageX - c0[0];
+        c0 = [d3.event.pageX, d3.event.pageY];
+
+        m1 = [d3.event.pageX, d3.event.pageY];
+        distance = (m1[0] - m0[0]);
+
+        o1 = [o0[0] + distance / 4, (country_view.rotate[1] || world_view.rotate[1])];
         t0 = m1;
         rotate(o1);
-        if (Math.abs(rate) > 2) {
+
+console.log(change)
+        if (Math.abs(change) > 20) {
           d3.timer(createTimerCallback());
         }
 
@@ -482,26 +502,23 @@ console.log('mousemove');
           var t1 = m1;
 
           return function(elapsed) {
-            console.log('ease')
             if (t0 !== t1) {
-              // console.log('old: ', timerId, t1)
+              // console.log('old: ', t0, t1)
               return true;
             }
-            // console.log('lastest: ', timerId, t1)
-            // decay -= (decay - ease(decay)) / 3;
+            // console.log('lastest: ', t0, t1)
+            // decay -= (decay - ease(decay)) / 8;
             decay -= ease(decay);
-            o1[0] += rate * decay;
+            o1[0] += change * decay * 12;
             rotate(o1);
-            console.log(decay)
             return !decay;
           };
         }
       }
 
       function mouseup() {
-console.log('mouseup');
-
-        m0 = null;
+        // resetMouse();
+        m0 = [0, 0];
         tooltips = tooltips0;
 
         // var m1 = [d3.event.pageX, d3.event.pageY],
@@ -580,65 +597,40 @@ console.log('mouseup');
   chart.colorData = function(_) {
     var type = arguments[0],
         params = arguments[1] || {};
-    var color = function(d, i) {
-          return sucrose.utils.defaultColor()(d, i);
-        };
-    var classes = function(d, i) {
-          return 'sc-country-' + i + (d.classes ? ' ' : '') + d.classes;
-        };
+
+    if (params.gradient) {
+      fill = function(d, i) {
+        return globe.gradient(d, i);
+      };
+      return chart;
+    }
 
     switch (type) {
       case 'graduated':
-        color = function(d, i) {
-          return d3.interpolateHsl(d3.rgb(params.c1), d3.rgb(params.c2))(i / params.l);
+        color = function(i) {
+          return d3.interpolateHsl(d3.rgb(params.c1), d3.rgb(params.c2))(i);
         };
         break;
       case 'class':
         color = function() {
-          return '';
+          return 'inherit';
         };
-        classes = function(d, i) {
+        classes = function(i) {
           var iClass = (i * (params.step || 1)) % 14;
           iClass = (iClass > 9 ? '' : '0') + iClass; //TODO: use d3.formatNumber
-          return 'sc-country-' + i + ' sc-fill' + iClass;
+          return 'sc-group sc-series-' + i + ' sc-fill' + iClass;
         };
         break;
       case 'data':
         color = function(d, i) {
-          var r = d.amount || 0;
-          return d3.interpolateHsl(d3.rgb(params.c1), d3.rgb(params.c2))(r / colorLimit);
+          return d.classes ? 'inherit' : d.color || sucrose.utils.defaultColor()(d, i);
+        };
+        classes = function(d, i) {
+          return 'sc-group sc-series-' + i + (d.classes ? ' ' + d.classes : '');
         };
         break;
     }
-    var fill = (!params.gradient) ? color : function(d, i) {
-        return chart.gradient(d, i);
-      };
 
-    chart.color(color);
-    chart.classes(classes);
-    chart.fill(fill);
-
-    return chart;
-  };
-
-  chart.color = function(_) {
-    if (!arguments.length) return color;
-    color = _;
-    return chart;
-  };
-  chart.fill = function(_) {
-    if (!arguments.length) return fill;
-    fill = _;
-    return chart;
-  };
-  chart.classes = function(_) {
-    if (!arguments.length) return classes;
-    classes = _;
-    return chart;
-  };
-  chart.gradient = function(_) {
-    if (!arguments.length) return gradient;
-    gradient = _;
     return chart;
   };
 
