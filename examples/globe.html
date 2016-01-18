@@ -15,6 +15,18 @@
       svg {
         pointer-events: all;
       }
+      .graticule {
+        fill: none;
+        stroke: #000;
+        stroke-opacity: .3;
+        stroke-width: .5px;
+      }
+
+      .graticule.outline {
+        stroke: #333;
+        stroke-opacity: 1;
+        stroke-width: 1.5px;
+      }
     </style>
   </head>
   <body class="full-screen">
@@ -30,6 +42,7 @@
 
 <script src="js/d3.min.js"></script>
 <script src="js/topojson.min.js"></script>
+<script src="../node_modules/d3-ease/build/d3-ease.min.js"></script>
 <script src="js/sucrose.min.js"></script>
 <script src="../src/models/globe.js"></script>
 

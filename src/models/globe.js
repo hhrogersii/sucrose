@@ -14,6 +14,8 @@ sucrose.models.globeChart = function() {
   // https://github.com/papandreou/node-cldr
   // https://github.com/melalj/topojson-map-generator
   // http://bl.ocks.org/mbostock/248bac3b8e354a9103c4#cubicInOut
+  // https://www.jasondavies.com/maps/rotate/
+  // https://www.jasondavies.com/maps/zoom/
 
   //============================================================
   // Public Variables with Default Settings
@@ -430,7 +432,8 @@ sucrose.models.globeChart = function() {
           tooltips0 = tooltips,
           m0,
           o0,
-          t0;
+          t0,
+          x0;
 
       chart.resize = function () {
         renderWidth = width || parseInt(container.style('width'), 10) || 960;
@@ -460,39 +463,47 @@ console.log('mousedown');
           clearInterval(iRotation);
         }
       }
-
+var t1;
       function mousemove() {
 console.log('mousemove');
 
         if (!m0) {
           return;
         }
-        var m1 = [d3.event.pageX, d3.event.pageY],
-            rate = (m1[0] - m0[0]) / 4,
-            decay = 0.999,
-            o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
+        // var m1 = [d3.event.pageX, d3.event.pageY],
+        //     rate = (m1[0] - m0[0]) / 4,
+        //     decay = 0.999,
+        //     o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
 
+        var change, rate, decay, m1, o1;
+        change = d3.event.pageX - x0;
+        x0 = d3.event.pageX;
+        m1 = [d3.event.pageX, d3.event.pageY];
+        rate = (m1[0] - m0[0]) / 4;
+        decay = 0.999;
+        o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
         t0 = m1;
         rotate(o1);
-        if (Math.abs(rate) > 2) {
+        if (Math.abs(change) > 15) {
           d3.timer(createTimerCallback());
         }
 
         function createTimerCallback() {
-          var t1 = m1;
+          t1 = m1;
 
           return function(elapsed) {
             console.log('ease')
             if (t0 !== t1) {
-              // console.log('old: ', timerId, t1)
+              // console.log('old: ', t0, t1)
               return true;
             }
-            // console.log('lastest: ', timerId, t1)
-            // decay -= (decay - ease(decay)) / 3;
+            // console.log('lastest: ', t0, t1)
             decay -= ease(decay);
+            // decay -= (decay - ease(decay)) / 3;
+            console.log(decay)
+
             o1[0] += rate * decay;
             rotate(o1);
-            console.log(decay)
             return !decay;
           };
         }

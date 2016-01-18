@@ -6914,6 +6914,7 @@ sucrose.models.globeChart = function() {
       },
       showLabels = true,
       autoSpin = false,
+      showGraticule = true,
       dispatch = d3.dispatch('chartClick', 'elementClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState', 'elementDblClick', 'elementMouseover', 'elementMouseout');
 
 
@@ -7102,6 +7103,14 @@ sucrose.models.globeChart = function() {
           .attr('class', 'sphere')
           .attr('d', path);
         var sphere = d3.select('.sphere');
+
+        if (showGraticule) {
+          globeEnter.append('path')
+              .datum(graticule)
+              .attr('class', 'graticule')
+              .attr('d', path);
+          var grid = d3.select('.graticule');
+        }
 
         // zoom and pan
         var zoom = d3.behavior.zoom()
@@ -7377,14 +7386,14 @@ sucrose.models.globeChart = function() {
           container.transition().call(chart);
         });
 
-      dispatch.on('chartClick', function() {
-          if (controls.enabled()) {
-            controls.dispatch.closeMenu();
-          }
-          if (legend.enabled()) {
-            legend.dispatch.closeMenu();
-          }
-        });
+      // dispatch.on('chartClick', function() {
+      //     if (controls.enabled()) {
+      //       controls.dispatch.closeMenu();
+      //     }
+      //     if (legend.enabled()) {
+      //       legend.dispatch.closeMenu();
+      //     }
+      //   });
 
     });
 
