@@ -14,8 +14,6 @@ sucrose.models.globeChart = function() {
   // https://github.com/papandreou/node-cldr
   // https://github.com/melalj/topojson-map-generator
   // http://bl.ocks.org/mbostock/248bac3b8e354a9103c4#cubicInOut
-  // https://www.jasondavies.com/maps/rotate/
-  // https://www.jasondavies.com/maps/zoom/
 
   //============================================================
   // Public Variables with Default Settings
@@ -436,12 +434,11 @@ sucrose.models.globeChart = function() {
       //------------------------------------------------------------
 
       var ease = d3.ease('cubic', 'out'),
-          timerId = [],
           tooltips0 = tooltips,
-          m0,
-          o0,
-          t0,
-          x0;
+          m0 = [0, 0],
+          o0 = [0, 0],
+          t0 = [0, 0],
+          c0 = [0, 0];
 
       chart.resize = function () {
         renderWidth = width || parseInt(container.style('width'), 10) || 960;
@@ -456,8 +453,17 @@ sucrose.models.globeChart = function() {
         refresh();
       }
 
+      function resetMouse() {
+        m0 = [0, 0];
+        o0 = [0, 0];
+        t0 = [0, 0];
+        c0 = [0, 0];
+      }
+
       function mousedown() {
+        resetMouse();
         m0 = [d3.event.pageX, d3.event.pageY];
+        c0 = m0;
         o0 = projection.rotate();
         d3.event.preventDefault();
 
@@ -469,27 +475,31 @@ sucrose.models.globeChart = function() {
           clearInterval(iRotation);
         }
       }
-var t1;
+
       function mousemove() {
-        if (!m0) {
+        if (!m0[0]) {
           return;
         }
-        var change, rate, decay, m1, o1;
-        change = d3.event.pageX - x0;
-        x0 = d3.event.pageX;
-        m1 = [d3.event.pageX, d3.event.pageY];
-        rate = (m1[0] - m0[0]) / 4;
+        var change, distance, decay, m1, o1;
         decay = 0.999;
-        o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
-console.log(change)
+
+        change = d3.event.pageX - c0[0];
+        c0 = [d3.event.pageX, d3.event.pageY];
+
+        m1 = [d3.event.pageX, d3.event.pageY];
+        distance = (m1[0] - m0[0]);
+
+        o1 = [o0[0] + distance / 4, (country_view.rotate[1] || world_view.rotate[1])];
         t0 = m1;
         rotate(o1);
-        if (Math.abs(change) > 15) {
+
+console.log(change)
+        if (Math.abs(change) > 20) {
           d3.timer(createTimerCallback());
         }
 
         function createTimerCallback() {
-          t1 = m1;
+          var t1 = m1;
 
           return function(elapsed) {
             if (t0 !== t1) {
@@ -497,8 +507,9 @@ console.log(change)
               return true;
             }
             // console.log('lastest: ', t0, t1)
-            decay -= (decay - ease(decay)) / 3;
-            o1[0] += rate * decay;
+            // decay -= (decay - ease(decay)) / 8;
+            decay -= ease(decay);
+            o1[0] += change * decay * 12;
             rotate(o1);
             return !decay;
           };
@@ -506,7 +517,8 @@ console.log(change)
       }
 
       function mouseup() {
-        m0 = null;
+        // resetMouse();
+        m0 = [0, 0];
         tooltips = tooltips0;
 
         // var m1 = [d3.event.pageX, d3.event.pageY],

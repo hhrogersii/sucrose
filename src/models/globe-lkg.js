@@ -14,8 +14,6 @@ sucrose.models.globeChart = function() {
   // https://github.com/papandreou/node-cldr
   // https://github.com/melalj/topojson-map-generator
   // http://bl.ocks.org/mbostock/248bac3b8e354a9103c4#cubicInOut
-  // https://www.jasondavies.com/maps/rotate/
-  // https://www.jasondavies.com/maps/zoom/
 
   //============================================================
   // Public Variables with Default Settings
@@ -469,7 +467,7 @@ sucrose.models.globeChart = function() {
           clearInterval(iRotation);
         }
       }
-var t1;
+
       function mousemove() {
         if (!m0) {
           return;
@@ -484,12 +482,12 @@ var t1;
 console.log(change)
         t0 = m1;
         rotate(o1);
-        if (Math.abs(change) > 15) {
+        // if (Math.abs(change) > 15) {
           d3.timer(createTimerCallback());
-        }
+        // }
 
         function createTimerCallback() {
-          t1 = m1;
+          var t1 = m1;
 
           return function(elapsed) {
             if (t0 !== t1) {

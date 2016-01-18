@@ -26,6 +26,18 @@
         fill: #6699cc;
         fill-opacity: .5;
       }
+.graticule {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .3;
+  stroke-width: .5px;
+}
+
+.graticule.outline {
+  stroke: #333;
+  stroke-opacity: 1;
+  stroke-width: 1.5px;
+}
     </style>
   </head>
   <body class="full-screen">
@@ -35,13 +47,13 @@
       </div>
     </div>
 
-<script src="js/jquery-2.1.4.min.js"></script>
+<script src="js/jquery.min.js"></script>
 <script src="js/lib.min.js"></script>
-<script src="js/sugar.min.js"></script>
 <script src="js/jquerymy.min.js"></script>
 
 <script src="js/d3.min.js"></script>
 <script src="js/topojson.min.js"></script>
+<script src="../node_modules/d3-ease/build/d3-ease.min.js"></script>
 <script src="js/sucrose.min.js"></script>
 <script src="../src/models/globe.js"></script>
 
