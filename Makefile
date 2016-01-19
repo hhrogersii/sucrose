@@ -46,7 +46,7 @@ CSS_COMPILER = \
 CSS_MINIFIER = \
 	node_modules/clean-css/bin/cleancss
 
-.PHONY: examples
+.PHONY: examples clean-js clean-css
 
 
 #PRODUCTION
@@ -75,9 +75,8 @@ npm-dev:
 all: sucrose.js sucrose.min.js sucrose.css sucrose.min.css
 
 # Javascript
-js: sucrose.min.js
+js: clean-js sucrose.js sucrose.min.js
 sucrose.js: $(JS_FILES)
-sucrose.js: Makefile
 	rm -f ./$@
 	cat header $(filter %.js,$^) >> ./$@
 sucrose.min.js: sucrose.js
@@ -89,9 +88,8 @@ clean-js:
 	rm -rf sucrose.js sucrose.min.js
 
 # Stylesheets
-css: sucrose.min.css
+css: clean-css sucrose.css sucrose.min.css
 sucrose.css: $(CSS_FILES)
-sucrose.css: Makefile
 	rm -f ./$@
 	node $(CSS_COMPILER) $(CSS_FILES) ./$@
 	cat header ./$@ > temp
@@ -120,7 +118,6 @@ examples: npm-prod
 
 examples-dev: npm-dev
 	cd examples && make install-dev
-
 
 reset:
 	git clean -dfx
