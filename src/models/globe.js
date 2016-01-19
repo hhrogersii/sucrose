@@ -242,13 +242,18 @@ sucrose.models.globeChart = function() {
 
         wrap
           .on('mousemove', mousemove)
-          .on('mouseup', mouseup);
+          .on('mouseup', mouseup)
+          .on('mouseout', mouseout);
 
-        sphere
+
+        globeChart
           .on('click', function () {
-            console.log('click')
             unLoadCountry();
-          });
+          })
+          // .on('mousedown', mousedown)
+          // .on('mousemove', mousemove)
+          // .on('mouseup', mouseup)
+          // .on('mouseout', mouseout);
 
         queue()
           .defer(d3.json, 'data/geo/world-countries-topo-110.json')
@@ -288,7 +293,8 @@ sucrose.models.globeChart = function() {
                 return fill(d, d.properties.mapcolor13 || i);
               });
 
-          countries.on('click', function (d) {
+          countries
+            .on('click', function (d) {
               if (active_country == d3.select(this)) {
                 return;
               }
@@ -440,17 +446,15 @@ sucrose.models.globeChart = function() {
         refresh();
       }
 
-
       var tooltips0 = tooltips,
           m0,
           n0,
           o0,
           v0 = 0,
           a0 = 0;
+      var defer = true;
 
       function mousedown() {
-// console.log('mousedown');
-        // m0 = null;
         t0 = [0];
         v0 = 0;
         a0 = 0;
@@ -459,7 +463,7 @@ sucrose.models.globeChart = function() {
         m0 = [d3.event.pageX, d3.event.pageY];
         n0 = projection.invert(m0);
         o0 = projection.rotate();
-// console.log('n0: ', n0);
+
         if (tooltips) {
           sucrose.tooltip.cleanup();
           tooltips = false;
@@ -474,8 +478,6 @@ sucrose.models.globeChart = function() {
           friction = 3;
 
       function mousemove() {
-// console.log('mousemove');
-
         if (!m0) {
           return;
         }
@@ -500,36 +502,37 @@ sucrose.models.globeChart = function() {
         t0 = [v1];
 
 
-console.log('mousemove: ', t0, a1);
 
-        if (Math.abs(a1) > 5 && Math.abs(a1) > Math.abs(a0)) {
+        // if (Math.abs(a1) > 5 && Math.abs(a1) > Math.abs(a0)) {
+          d3.timer.flush();
           d3.timer(createTimerCallback());
-        }
+        // }
         a0 = a1;
 
         function createTimerCallback() {
           var t1 = t0; // assign by reference
-// console.log('createTimer t1:', t1);
 
           return function(elapsed) {
-// console.log('timer t1:', t1, 'timer t0:', t0);
+            console.log('t0,t1: ', t0, t1);
             if (t0 !== t1) {
-console.log('old: ', t0, t1);
               return true;
             }
-console.log('lastest: ', t0, t1);
+            if (defer) {
+              return;
+            }
+            // if (m0) {
+            //   return;
+            // }
 
             var decay1 = ease(decay0);
+            decay0 = ease(decay0);
             if (!decay1) {
               return true;
             }
-            decay0 = decay0 - (decay0 - decay1) / friction;
+            // decay0 = decay0 - (decay0 - decay1) / friction;
 
-// console.log('decay:', decay0);
             var n2 = projection.rotate();
-// console.log('n2: ', n2);
             var o2 = [n2[0] + t1[0] * decay0, n2[1]];
-// console.log('o2: ', o2);
 
             rotate(o2);
             return !decay0;
@@ -538,10 +541,16 @@ console.log('lastest: ', t0, t1);
       }
 
       function mouseup() {
-// console.log('mouseup');
+        console.log('mouseup')
         m0 = null;
-        // t0 = [0];
+        defer = false;
+        tooltips = tooltips0;
+      }
 
+      function mouseout() {
+        console.log('mouseout')
+        m0 = null;
+        defer = false;
         tooltips = tooltips0;
       }
 
