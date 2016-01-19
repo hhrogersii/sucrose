@@ -16,6 +16,7 @@ sucrose.models.globeChart = function() {
   // http://bl.ocks.org/mbostock/248bac3b8e354a9103c4#cubicInOut
   // https://www.jasondavies.com/maps/rotate/
   // https://www.jasondavies.com/maps/zoom/
+  // http://www.kirupa.com/html5/animating_with_easing_functions_in_javascript.htm
 
   //============================================================
   // Public Variables with Default Settings
@@ -203,8 +204,7 @@ sucrose.models.globeChart = function() {
           .attr('class', 'sc-chartBackground')
           .attr('width', availableSize.width)
           .attr('height', availableSize.height)
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-          .style('fill', 'transparent');
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
         var backg = wrap.select('.sc-chartBackground');
 
         var gEnter = wrapEnter.append('g')
@@ -427,14 +427,6 @@ sucrose.models.globeChart = function() {
       // Event Handling/Dispatching (in chart's scope)
       //------------------------------------------------------------
 
-      var ease = d3.ease('cubic', 'out'),
-          timerId = [],
-          tooltips0 = tooltips,
-          m0,
-          o0,
-          t0,
-          x0;
-
       chart.resize = function () {
         renderWidth = width || parseInt(container.style('width'), 10) || 960;
         renderHeight = height || parseInt(container.style('height'), 10) || 400;
@@ -448,13 +440,20 @@ sucrose.models.globeChart = function() {
         refresh();
       }
 
+
+      var tooltips0 = tooltips,
+          m0,
+          n0,
+          o0;
+
       function mousedown() {
-console.log('mousedown');
+// console.log('mousedown');
 
-        m0 = [d3.event.pageX, d3.event.pageY];
-        o0 = projection.rotate();
         d3.event.preventDefault();
-
+        m0 = [d3.event.pageX, d3.event.pageY];
+        n0 = projection.invert(m0);
+        o0 = projection.rotate();
+// console.log('n0: ', n0);
         if (tooltips) {
           sucrose.tooltip.cleanup();
           tooltips = false;
@@ -463,56 +462,77 @@ console.log('mousedown');
           clearInterval(iRotation);
         }
       }
-var t1;
+
+      var ease = d3.ease('circle', 'out'),
+          t0 = [0],
+          friction = 3;
+
       function mousemove() {
-console.log('mousemove');
+// console.log('mousemove');
 
         if (!m0) {
           return;
         }
         // var m1 = [d3.event.pageX, d3.event.pageY],
         //     rate = (m1[0] - m0[0]) / 4,
-        //     decay = 0.999,
         //     o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
 
-        var change, rate, decay, m1, o1;
-        change = d3.event.pageX - x0;
-        x0 = d3.event.pageX;
+        var distance, velocity, rate, m1, n1, o1;
+        var decay0 = 0.999;
+
         m1 = [d3.event.pageX, d3.event.pageY];
-        rate = (m1[0] - m0[0]) / 4;
-        decay = 0.999;
-        o1 = [o0[0] + rate, (country_view.rotate[1] || world_view.rotate[1])];
-        t0 = m1;
+        n1 = projection.invert(m1);
+        if (!n1[0]) {
+          return;
+        }
+
+        distance = n1[0] - n0[0];
+        o1 = [o0[0] + distance, (country_view.rotate[1] || world_view.rotate[1])];
         rotate(o1);
-        if (Math.abs(change) > 15) {
+        o0 = [o1[0], o1[1]];
+        t0 = [distance];
+
+console.log('mousemove t0: ', t0);
+
+        if (Math.abs(distance) > 5) {
           d3.timer(createTimerCallback());
         }
 
         function createTimerCallback() {
-          t1 = m1;
+          var t1 = t0; // assign by reference
+// console.log('createTimer t1:', t1);
 
           return function(elapsed) {
-            console.log('ease')
+// console.log('timer t1:', t1, 'timer t0:', t0);
             if (t0 !== t1) {
-              // console.log('old: ', t0, t1)
+// console.log('old: ', t0, t1);
               return true;
             }
-            // console.log('lastest: ', t0, t1)
-            decay -= ease(decay);
-            // decay -= (decay - ease(decay)) / 3;
-            console.log(decay)
+// console.log('lastest: ', t0, t1);
 
-            o1[0] += rate * decay;
-            rotate(o1);
-            return !decay;
+            var decay1 = ease(decay0);
+            if (!decay1) {
+              return true;
+            }
+            decay0 = decay0 - (decay0 - decay1) / friction;
+
+// console.log('decay:', decay0);
+            var n2 = projection.rotate();
+// console.log('n2: ', n2);
+            var o2 = [n2[0] + t1[0] * decay0, n2[1]];
+// console.log('o2: ', o2);
+
+            rotate(o2);
+            return !decay0;
           };
         }
       }
 
       function mouseup() {
-console.log('mouseup');
+// console.log('mouseup');
 
         m0 = null;
+        t0 = [0];
         tooltips = tooltips0;
 
         // var m1 = [d3.event.pageX, d3.event.pageY],

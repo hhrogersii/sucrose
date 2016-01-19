@@ -721,18 +721,20 @@ text.sc-pie-hole-label {
 .sc-chart-globe svg {
   pointer-events: all;
 }
-.sc-chart-globe .globe {
-  fill: #69C;
-  fill-opacity: .5;
+.sc-chart-globe .sc-chartBackground {
+  fill: #555;
 }
 .sc-chart-globe .sphere {
   fill: #DBE4F0;
+  stroke: #DBE4F0;
+  stroke-width: 1px;
 }
 .sc-chart-globe .graticule {
   fill: none;
   stroke: #777;
   stroke-width: .5px;
-  stroke-opacity: .5;
+  stroke-opacity: .6;
+  pointer-events: none;
 }
 .sc-chart-globe .countries {
   fill: #AAA;
