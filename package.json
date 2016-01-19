@@ -33,8 +33,10 @@
   "devDependencies": {
     "clean-css": "^3.4.8",
     "d3-ease": "^0.5.1",
+    "impetus": "^0.8.3",
     "less": "^2.5.3",
     "less-plugin-clean-css": "^1.5.1",
+    "smash": "0",
     "uglify-js": "2.6.1"
   },
   "license": "Apache-2.0"
