@@ -5,22 +5,14 @@ sucrose.models.gauge = function() {
   // Public Variables with Default Settings
   //------------------------------------------------------------
 
-  var margin = {top: 0, right: 0, bottom: 0, left: 0}
-    , width = null
-    , height = null
-    , clipEdge = true
+  var clipEdge = true
     , getValues = function(d) { return d.values; }
     , getX = function(d) { return d.key; }
     , getY = function(d) { return d.y; }
-    , locality = sucrose.utils.buildLocality()
-    , id = Math.floor(Math.random() * 10000) //Create semi-unique ID in case user doesn't select one
     , labelFormat = d3.format(',g')
     , valueFormat = d3.format(',.f')
     , showLabels = true
     , showPointer = true
-    , color = function (d, i) { return sucrose.utils.defaultColor()(d, d.series); }
-    , fill = color
-    , classes = function (d,i) { return 'sc-arc-path sc-series-' + d.series; }
     , dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout', 'elementMousemove')
   ;
 
@@ -36,6 +28,9 @@ sucrose.models.gauge = function() {
     , labelInset = 10
   ;
 
+  var base = sucrose.models.base();
+
+
   //============================================================
 
   //colorScale = d3.scale.linear().domain([0, .5, 1].map(d3.interpolate(min, max))).range(["green", "yellow", "red"]);
@@ -49,8 +44,8 @@ sucrose.models.gauge = function() {
       var properties = chartData.properties
         , data = chartData.data;
 
-        var availableWidth = width - margin.left - margin.right
-          , availableHeight = height - margin.top - margin.bottom
+        var availableWidth = chart.width() - chart.margin().left - chart.margin().right
+          , availableHeight = chart.height() - chart.margin().top - chart.margin().bottom
           , radius =  Math.min( (availableWidth/2), availableHeight ) / (  (100+labelInset)/100  )
           , container = d3.select(this)
           , range = maxAngle - minAngle
@@ -82,17 +77,20 @@ sucrose.models.gauge = function() {
         var gEnter = wrapEnter.append('g');
         var g = wrap.select('g');
 
-        //set up the gradient constructor function
-        chart.gradient = function(d,i) {
-          return sucrose.utils.colorRadialGradient( d, id+'-'+i, {x:0, y:0, r:radius, s:ringWidth/100, u:'userSpaceOnUse'}, color(d,i), wrap.select('defs') );
-        };
+        //set up the color and gradient constructor functions
+        base
+          .color(function (d, i) { return sucrose.utils.defaultColor()(d, d.series); })
+          .classes(function (d,i) { return 'sc-arc-path sc-series-' + d.series; })
+          .gradient(function(d,i) {
+            return sucrose.utils.colorRadialGradient( d, id+'-'+i, {x:0, y:0, r:radius, s:ringWidth/100, u:'userSpaceOnUse'}, color(d,i), wrap.select('defs') );
+          });
 
         gEnter.append('g').attr('class', 'sc-arc-group');
         gEnter.append('g').attr('class', 'sc-labels');
         gEnter.append('g').attr('class', 'sc-pointer');
         gEnter.append('g').attr('class', 'sc-odometer');
 
-        wrap.attr('transform', 'translate('+ (margin.left/2 + margin.right/2 + prop(labelInset)) +','+ (margin.top + prop(labelInset)) +')');
+        wrap.attr('transform', 'translate('+ (chart.margin().left/2 + chart.margin().right/2 + prop(labelInset)) +','+ (chart.margin().top + prop(labelInset)) +')');
         //g.select('.sc-arc-gauge').attr('transform', 'translate('+ availableWidth/2 +','+ availableHeight/2 +')');
 
         //------------------------------------------------------------
@@ -133,7 +131,7 @@ sucrose.models.gauge = function() {
                   point: d,
                   pointIndex: i,
                   e: d3.event,
-                  id: id
+                  id: chart.id()
               });
             })
             .on('mouseout', function(d, i) {
@@ -141,7 +139,7 @@ sucrose.models.gauge = function() {
               dispatch.elementMouseout({
                   point: d,
                   index: i,
-                  id: id
+                  id: chart.id()
               });
             })
             .on('mousemove', function(d, i) {
@@ -152,7 +150,7 @@ sucrose.models.gauge = function() {
                   point: d,
                   index: i,
                   e: d3.event,
-                  id: id
+                  id: chart.id()
               });
               d3.event.stopPropagation();
             })
@@ -161,14 +159,14 @@ sucrose.models.gauge = function() {
                   point: d,
                   index: i,
                   e: d3.event,
-                  id: id
+                  id: chart.id()
               });
               d3.event.stopPropagation();
             });
 
         ag.selectAll('.sc-arc-path').transition().duration(10)
-            .attr('class', classes)
-            .attr('fill', fill)
+            .attr('class', chart.classes())
+            .attr('fill', chart.fill())
             .attr('d', arc);
 
         //------------------------------------------------------------
@@ -253,7 +251,7 @@ sucrose.models.gauge = function() {
           ;
 
           g.select('.sc-odometer')
-              .attr('transform', 'translate('+ radius +','+ ( margin.top + prop(70) + bbox.width ) +')');
+              .attr('transform', 'translate('+ radius +','+ ( chart.margin().top + prop(70) + bbox.width ) +')');
 
         } else {
           g.select('.sc-odometer').select('.sc-odomText').remove();
@@ -299,44 +297,7 @@ sucrose.models.gauge = function() {
 
   chart.dispatch = dispatch;
 
-  chart.color = function(_) {
-    if (!arguments.length) return color;
-    color = _;
-    return chart;
-  };
-  chart.fill = function(_) {
-    if (!arguments.length) return fill;
-    fill = _;
-    return chart;
-  };
-  chart.classes = function(_) {
-    if (!arguments.length) return classes;
-    classes = _;
-    return chart;
-  };
-  chart.gradient = function(_) {
-    if (!arguments.length) return gradient;
-    gradient = _;
-    return chart;
-  };
-
-  chart.margin = function(_) {
-    if (!arguments.length) return margin;
-    margin = _;
-    return chart;
-  };
-
-  chart.width = function(_) {
-    if (!arguments.length) return width;
-    width = _;
-    return chart;
-  };
-
-  chart.height = function(_) {
-    if (!arguments.length) return height;
-    height = _;
-    return chart;
-  };
+  d3.rebind(chart, base, 'direction', 'id', 'locality', 'strings', 'classes', 'color', 'fill', 'gradient', 'margin', 'width', 'height');
 
   chart.values = function(_) {
     if (!arguments.length) return getValues;
@@ -359,12 +320,6 @@ sucrose.models.gauge = function() {
   chart.showLabels = function(_) {
     if (!arguments.length) return showLabels;
     showLabels = _;
-    return chart;
-  };
-
-  chart.id = function(_) {
-    if (!arguments.length) return id;
-    id = _;
     return chart;
   };
 
@@ -447,14 +402,6 @@ sucrose.models.gauge = function() {
   chart.showPointer = function(_) {
     if (!arguments.length) return showPointer;
     showPointer = _;
-    return chart;
-  };
-
-  chart.locality = function(_) {
-    if (!arguments.length) {
-      return locality;
-    }
-    locality = sucrose.utils.buildLocality(_);
     return chart;
   };
 
