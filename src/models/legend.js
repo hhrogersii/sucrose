@@ -10,7 +10,7 @@ sucrose.models.legend = function() {
       align = 'right',
       direction = 'ltr',
       position = 'start',
-      radius = 6, // size of dot
+      radius = 5, // size of dot
       diameter = radius * 2, // diamter of dot plus stroke
       gutter = 10, // horizontal gap between keys
       spacing = 12, // vertical gap between keys
@@ -28,7 +28,7 @@ sucrose.models.legend = function() {
       },
       id = Math.floor(Math.random() * 10000), //Create semi-unique ID in case user doesn't select one
       getKey = function(d) {
-        return d.key.length > 0 || (!isNaN(parseFloat(d.key)) && isFinite(d.key)) ? d.key : legend.strings().noLabel;
+        return d.key.length > 0 || (!isNaN(parseFloat(d.key)) && isFinite(d.key)) ? d.key : chart.strings().noLabel;
       },
       color = function(d, i) { return sucrose.utils.defaultColor()(d, i); },
       classes = function(d, i) { return ''; },
@@ -55,6 +55,7 @@ sucrose.models.legend = function() {
           containerHeight = height,
           keyWidths = [],
           legendHeight = 0,
+          dropdownWidth = 0,
           dropdownHeight = 0,
           type = '',
           inline = position === 'start' ? true : false,
@@ -91,15 +92,21 @@ sucrose.models.legend = function() {
       var defs = wrap.select('defs');
       var clip = wrap.select('#sc-edge-clip-' + id + ' rect');
 
+      // background
       wrapEnter
         .append('rect').attr('class', 'sc-legend-background');
       var back = wrap.select('.sc-legend-background');
       var backFilter = sucrose.utils.dropShadow('legend_back_' + id, defs, {blur: 2});
 
+      // legend link
+      wrapEnter
+        .append('rect').attr('class', 'sc-legend-link-background');
+      var linkBackground = wrap.select('.sc-legend-link-background');
       wrapEnter
         .append('text').attr('class', 'sc-legend-link');
       var link = wrap.select('.sc-legend-link');
 
+      // mask and legend container
       wrapEnter
         .append('g').attr('class', 'sc-legend-mask')
         .append('g').attr('class', 'sc-legend');
@@ -184,7 +191,7 @@ sucrose.models.legend = function() {
       link
         .text(legendOpen === 1 ? legend.strings().close : legend.strings().open)
         .attr('text-anchor', align === 'left' ? rtl ? 'end' : 'start' : rtl ? 'start' : 'end')
-        .attr('dy', '.36em')
+        .attr('dy', 0)
         .attr('dx', 0)
         .style('opacity', 0)
         .on('click', function(d, i) {
@@ -242,8 +249,9 @@ sucrose.models.legend = function() {
 
       legend.getLineHeight = function() {
         g.style('display', 'inline');
-        var lineHeightBB = Math.floor(series.select('text').node().getBoundingClientRect().height);
-        return lineHeightBB;
+        return g.selectAll('.sc-series text')[0].reduce(function(max, d) {
+          return Math.max(max, Math.floor(d.getBoundingClientRect().height));
+        }, 0);
       };
 
       legend.arrange = function(containerWidth) {
@@ -267,12 +275,17 @@ sucrose.models.legend = function() {
             cols = keys,
             columnWidths = [],
             keyPositions = [],
+            menuMargin = {top: 7, right: 7, bottom: 7, left: 7}, // account for stroke width
             maxWidth = containerWidth - margin.left - margin.right,
             maxRowWidth = 0,
             minRowWidth = 0,
-            textHeight = this.getLineHeight(),
-            lineHeight = diameter + (inline ? 0 : textHeight) + lineSpacing,
-            menuMargin = {top: 7, right: 7, bottom: 7, left: 7}, // account for stroke width
+            linkBBox = link.node().getBoundingClientRect(),
+            linkWidth = linkBBox.width,
+            linkHeight = linkBBox.height,
+            lineHeight = diameter + (inline ? 0 : linkHeight) + lineSpacing,
+            topOffset = menuMargin.top + radius,
+            leftOffset = menuMargin.left + radius,
+            dropdownOffset = 0,
             xpos = 0,
             ypos = 0,
             i,
@@ -373,7 +386,7 @@ sucrose.models.legend = function() {
           legend
             .width(margin.left + maxRowWidth + margin.right)
             .height(margin.top + rows * lineHeight - lineSpacing + margin.bottom);
-
+          // console.log(margin.top ,rows , lineHeight , lineSpacing , margin.bottom)
           switch (align) {
             case 'left':
               shift = 0;
@@ -472,22 +485,24 @@ sucrose.models.legend = function() {
           useScroll = true;
 
           legend
-            .width(menuMargin.left + d3.max(keyWidths) + diameter + textGap + menuMargin.right)
-            .height(margin.top + diameter + margin.top); //don't use bottom here because we want vertical centering
+            .width(margin.left + linkWidth) //we only need one margin
+            .height(margin.top + linkHeight + margin.top); //don't use bottom here because we want vertical centering
 
-          legendHeight = menuMargin.top + diameter * keys + spacing * (keys - 1) + menuMargin.bottom;
-          dropdownHeight = Math.min(containerHeight - legend.height(), legendHeight);
+          legendHeight = menuMargin.top + (diameter + spacing) * keys - spacing + menuMargin.bottom;
+          dropdownWidth = menuMargin.left + d3.max(keyWidths) + diameter + textGap + menuMargin.right;
+          dropdownHeight = Math.min(containerHeight - legend.height() - margin.bottom, legendHeight);
+          dropdownOffset = legend.width() - dropdownWidth;
 
           clip
-            .attr('x', 0.5 - menuMargin.top - radius)
-            .attr('y', 0.5 - menuMargin.top - radius)
-            .attr('width', legend.width())
+            .attr('x', 0.5 - leftOffset)
+            .attr('y', 0.5 - topOffset)
+            .attr('width', dropdownWidth)
             .attr('height', dropdownHeight);
 
           back
-            .attr('x', 0.5)
+            .attr('x', 0.5 + dropdownOffset)
             .attr('y', 0.5 + legend.height())
-            .attr('width', legend.width())
+            .attr('width', dropdownWidth)
             .attr('height', dropdownHeight)
             .attr('rx', 2)
             .attr('ry', 2)
@@ -498,17 +513,27 @@ sucrose.models.legend = function() {
           link
             .attr('transform', function(d, i) {
               var xpos = align === 'left' ? 0.5 : 0.5 + legend.width(),
-                  ypos = margin.top + radius;
-              return 'translate(' + xpos + ',' + ypos + ')';
+                  ypos = margin.top;
+              return 'translate(' + xpos + ',' + (legend.height() / 2) + ')';
             })
+            .style('dominant-baseline', 'central')
             .style('opacity', 1);
+
+          linkBackground
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', legend.width())
+            .attr('height', legend.height())
+            // .style('fill', '#FFE')
+            // .style('opacity', 0.1)
+            .attr('fill', '#cdf');
 
           mask
             .attr('clip-path', 'url(#sc-edge-clip-' + id + ')')
             .attr('transform', function(d, i) {
-              var xpos = menuMargin.left + radius,
-                  ypos = legend.height() + menuMargin.top + radius;
-              return 'translate(' + xpos + ',' + ypos + ')';
+              var xpos = dropdownOffset + leftOffset,
+                  ypos = legend.height() + topOffset;
+              return 'translate(' + xpos + ',' + 0 + ')';
             });
 
           g
@@ -527,12 +552,12 @@ sucrose.models.legend = function() {
 
           series.select('rect')
             .attr('x', function(d) {
-              var w = (diameter + gutter) / 2 * sign(rtl);
-              w -= rtl ? keyWidth(d.series) : 0;
-              return w;
+              var x = leftOffset * sign(rtl);
+              x -= rtl ? dropdownWidth : 0;
+              return x;
             })
             .attr('width', function(d) {
-              return keyWidth(d.series);
+              return dropdownWidth;
             })
             .attr('height', diameter + lineSpacing);
 

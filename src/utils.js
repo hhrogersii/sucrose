@@ -427,6 +427,25 @@ sucrose.utils.getTextBBox = function(text, floats) {
   return size;
 };
 
+sucrose.utils.getFontMetrics = function(_string, _container, classes) {
+  var txt = _container.select('.tmp-text-strings').select('text');
+  var metrics = {};
+  if (txt.empty()) {
+    txt = _container.append('g').attr('class', 'tmp-text-strings').append('text');
+  }
+  txt
+    .classed(classes, true)
+    .style('display', 'inline')
+    .text(_string);
+  var baseline = txt.style('dominant-baseline', 'alphabetical').node().getBoundingClientRect().top;
+  var hanging = txt.style('dominant-baseline', 'hanging').node().getBoundingClientRect().top;
+  var central = txt.style('dominant-baseline', 'central').node().getBoundingClientRect().top;
+  metrics.hanging = Math.round(hanging - baseline);
+  metrics.central = Math.round(baseline - central);
+  txt.text('').attr('class', 'tmp-text-strings').attr('style', 'display:none');
+  return metrics;
+};
+
 sucrose.utils.getTextContrast = function(c, i, callback) {
   var back = c,
       backLab = d3.lab(back),
