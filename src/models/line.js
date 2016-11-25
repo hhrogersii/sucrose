@@ -15,8 +15,8 @@ export default function line() {
       height = 500,
       getX = function(d) { return d.x; }, // accessor to get the x value from a data point
       getY = function(d) { return d.y; }, // accessor to get the y value from a data point
-      x, //can be accessed via chart.xScale()
-      y, //can be accessed via chart.yScale()
+      x, //can be accessed via model.xScale()
+      y, //can be accessed via model.yScale()
       defined = function(d, i) { return !isNaN(getY(d, i)) && getY(d, i) !== null; }, // allows a line to be not continuous when it is not defined
       isArea = function(d) { return (d && d.area) || false; }, // decides if a line is an area or just a line
       interpolate = 'linear', // controls the line interpolation
@@ -37,7 +37,7 @@ export default function line() {
 
   //============================================================
 
-  function chart(selection) {
+  function model(selection) {
     selection.each(function(data) {
 
       var container = d3.select(this);
@@ -73,7 +73,7 @@ export default function line() {
 
       //set up the gradient constructor function
       gradient = function(d, i, p) {
-        return utility.colorLinearGradient(d, chart.id() + '-' + i, p, color(d, i), wrap.select('defs'));
+        return utility.colorLinearGradient(d, model.id() + '-' + i, p, color(d, i), wrap.select('defs'));
       };
 
       //------------------------------------------------------------
@@ -85,7 +85,7 @@ export default function line() {
       // y0 = y.copy();
 
       //------------------------------------------------------------
-      // Setup containers and skeleton of chart
+      // Setup containers and skeleton of model
 
       var wrap_bind = container.selectAll('g.sc-wrap.sc-line').data([data]);
       var wrap_entr = wrap_bind.enter().append('g').attr('class', 'sc-wrap sc-line');
@@ -257,112 +257,112 @@ export default function line() {
       // y0 = y.copy();
     });
 
-    return chart;
+    return model;
   }
 
   //============================================================
   // Expose Public Variables
   //------------------------------------------------------------
 
-  chart.dispatch = scatter.dispatch;
-  chart.scatter = scatter;
+  model.dispatch = scatter.dispatch;
+  model.scatter = scatter;
 
-  fc.rebind(chart, scatter, 'id', 'interactive', 'size', 'xScale', 'yScale', 'zScale', 'xDomain', 'yDomain', 'sizeDomain', 'sizeRange', 'forceX', 'forceY', 'forceSize', 'useVoronoi', 'clipVoronoi', 'clipRadius', 'padData', 'padDataOuter', 'singlePoint', 'nice', 'locality');
+  fc.rebind(model, scatter, 'id', 'interactive', 'size', 'xScale', 'yScale', 'zScale', 'xDomain', 'yDomain', 'sizeDomain', 'sizeRange', 'forceX', 'forceY', 'forceSize', 'useVoronoi', 'clipVoronoi', 'clipRadius', 'padData', 'padDataOuter', 'singlePoint', 'nice', 'locality');
 
-  chart.color = function(_) {
+  model.color = function(_) {
     if (!arguments.length) { return color; }
     color = _;
     scatter.color(color);
-    return chart;
+    return model;
   };
-  chart.fill = function(_) {
+  model.fill = function(_) {
     if (!arguments.length) { return fill; }
     fill = _;
     scatter.fill(fill);
-    return chart;
+    return model;
   };
-  chart.classes = function(_) {
+  model.classes = function(_) {
     if (!arguments.length) { return classes; }
     classes = _;
     scatter.classes(classes);
-    return chart;
+    return model;
   };
-  chart.gradient = function(_) {
+  model.gradient = function(_) {
     if (!arguments.length) { return gradient; }
     gradient = _;
-    return chart;
+    return model;
   };
 
-  chart.margin = function(_) {
+  model.margin = function(_) {
     if (!arguments.length) { return margin; }
     for (var prop in _) {
       if (_.hasOwnProperty(prop)) {
         margin[prop] = _[prop];
       }
     }
-    return chart;
+    return model;
   };
-  chart.width = function(_) {
+  model.width = function(_) {
     if (!arguments.length) { return width; }
     width = _;
-    return chart;
+    return model;
   };
-  chart.height = function(_) {
+  model.height = function(_) {
     if (!arguments.length) { return height; }
     height = _;
-    return chart;
+    return model;
   };
 
-  chart.x = function(_) {
+  model.x = function(_) {
     if (!arguments.length) { return getX; }
     getX = _;
     scatter.x(_);
-    return chart;
+    return model;
   };
-  chart.y = function(_) {
+  model.y = function(_) {
     if (!arguments.length) { return getY; }
     getY = _;
     scatter.y(_);
-    return chart;
+    return model;
   };
 
-  chart.delay = function(_) {
+  model.delay = function(_) {
     if (!arguments.length) { return delay; }
     delay = _;
-    return chart;
+    return model;
   };
-  chart.duration = function(_) {
+  model.duration = function(_) {
     if (!arguments.length) { return duration; }
     duration = _;
     scatter.duration(_);
-    return chart;
+    return model;
   };
 
-  chart.clipEdge = function(_) {
+  model.clipEdge = function(_) {
     if (!arguments.length) { return clipEdge; }
     clipEdge = _;
-    return chart;
+    return model;
   };
 
-  chart.interpolate = function(_) {
+  model.interpolate = function(_) {
     if (!arguments.length) { return interpolate; }
     interpolate = _;
-    return chart;
+    return model;
   };
 
-  chart.defined = function(_) {
+  model.defined = function(_) {
     if (!arguments.length) { return defined; }
     defined = _;
-    return chart;
+    return model;
   };
 
-  chart.isArea = function(_) {
+  model.isArea = function(_) {
     if (!arguments.length) { return isArea; }
     isArea = utility.functor(_);
-    return chart;
+    return model;
   };
 
   //============================================================
 
-  return chart;
+  return model;
 }
