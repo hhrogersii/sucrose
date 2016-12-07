@@ -3,6 +3,12 @@ import utility from '../utility.js';
 
 export default function axis() {
 
+// (function (global, factory) {
+//   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3'), require('d3fc-rebind'), require('../utility.js')) :
+//   typeof define === 'function' && define.amd ? define(['exports', 'd3', 'd3fc-rebind'], factory) :
+//   (factory((global.sucrose = global.sucrose || {}), global.d3, global.d3fc-rebind));
+// }(this, (function (exports, d3, fc, utility) { 'use strict';
+
   //============================================================
   // Public Variables with Default Settings
   //------------------------------------------------------------
@@ -763,7 +769,15 @@ export default function axis() {
       return valueFormat;
     }
     valueFormat = _;
-    axis.tickFormat(valueFormat);
+    axis.tickFormat(_);
+    return model;
+  };
+  model.tickFormat = function(_) {
+    if (!arguments.length) {
+      return tickFormat;
+    }
+    tickFormat = _;
+    axis.tickFormat(_);
     return model;
   };
   model.tickValues = function(_) {
@@ -790,14 +804,6 @@ export default function axis() {
     axis.tickPadding(_);
     return model;
   };
-  model.tickFormat = function(_) {
-    if (!arguments.length) {
-      return tickFormat;
-    }
-    tickFormat = _;
-    axis.tickFormat(_);
-    return model;
-  };
   model.tickSizeInner = function(_) {
     if (!arguments.length) {
       return tickSizeInner;
@@ -819,3 +825,9 @@ export default function axis() {
 
   return model;
 }
+
+// exports.axis = model;
+
+// Object.defineProperty(exports, '__esModule', { value: true });
+
+// })));

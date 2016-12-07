@@ -28,7 +28,7 @@ export default function lineChart() {
         noData: 'No Data Available.',
         noLabel: 'undefined'
       },
-      pointRadius = 3,
+      pointRadius = 2,
       dispatch = d3.dispatch('chartClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState');
 
   //============================================================
@@ -74,7 +74,9 @@ export default function lineChart() {
 
       var properties = chartData ? chartData.properties : {},
           data = chartData ? chartData.data : null,
-          labels = properties.labels ? properties.labels.map(function(d) { return d.l || d; }) : [];
+          labels = properties.groups ? properties.groups.map(function(d) { return d.label || d.l || d; }) : [];
+
+console.log('properties.groups: ', properties.groups);
 
       var containerWidth = parseInt(container.style('width'), 10),
           containerHeight = parseInt(container.style('height'), 10);
@@ -88,16 +90,22 @@ export default function lineChart() {
           xIsDatetime = chartData.properties.xDataType === 'datetime' || false,
           yIsCurrency = chartData.properties.yDataType === 'currency' || false;
 
-      var xValueFormat = function(d, i, selection, noEllipsis) {
-            var label = xIsDatetime ?
-                          utility.dateFormat(d, '%x', chart.locality()) :
-                          isNaN(parseInt(d, 10)) || !xTickLabels || !Array.isArray(xTickLabels) ?
-                            d :
-                            xTickLabels[parseInt(d, 10)];
+      var xTickFormat = function(d, i, selection) {
+            // console.log('xTickFormat arguments: ', arguments, xIsDatetime);
+            var label;
+            label = xIsDatetime ?
+                      // date
+                      utility.dateFormat(d, 'multi', chart.locality()) : //TODO: formatter should be set by data
+                      !isNaN(parseInt(d, 10)) || Array.isArray(xTickLabels) ?
+                        // label
+                        xTickLabels[parseInt(i, 10)] :
+                        // integer
+                        d;
             return label;
           };
 
-      var yValueFormat = function(d) {
+      var yTickFormat = function(d, i, selection) {
+            // console.log('yTickFormat arguments: ', arguments);
             return utility.numberFormatSI(d, 2, yIsCurrency, chart.locality());
           };
 
@@ -149,10 +157,10 @@ export default function lineChart() {
         }
       });
 
-      xTickLabels = properties.labels ?
-          properties.labels.map(function(d) { return [].concat(d.l)[0] || chart.strings().noLabel; }) :
-          [];
-
+      xTickLabels = labels.map(function(d) {
+          return [].concat(d)[0] || chart.strings().noLabel;
+        });
+console.log('xTickLabels: ', xTickLabels);
       // TODO: what if the dimension is a numerical range?
       // xValuesAreDates = xTickLabels.length ?
       //       utility.isValidDate(xTickLabels[0]) :
@@ -294,11 +302,12 @@ export default function lineChart() {
       xAxis
         .scale(x)
         .tickPadding(6)
-        .valueFormat(xValueFormat);
+        .ticks(xTickLabels.length || null)
+        .tickFormat(xTickFormat);
       yAxis
         .scale(y)
         .tickPadding(6)
-        .valueFormat(yValueFormat);
+        .tickFormat(yTickFormat);
 
       //------------------------------------------------------------
       // Main chart wrappers
@@ -491,10 +500,7 @@ export default function lineChart() {
 
         // Y-Axis
         yAxis
-          .margin(innerMargin)
-          .tickFormat(function(d, i) {
-            return yAxis.valueFormat()(d, yIsCurrency);
-          });
+          .margin(innerMargin);
         yAxis_wrap
           .call(yAxis);
         // reset inner dimensions
@@ -506,10 +512,7 @@ export default function lineChart() {
         // resize ticks based on new dimensions
         xAxis
           .tickSize(-innerHeight + (lines.padData() ? pointRadius : 0), 0)
-          .margin(innerMargin)
-          .tickFormat(function(d, i, noEllipsis) {
-            return xAxis.valueFormat()(d - !isArrayData, xTickLabels, xIsDatetime);
-          });
+          .margin(innerMargin);
         xAxis_wrap
           .call(xAxis);
         xAxisMargin = xAxis.margin();
@@ -867,4 +870,4 @@ export default function lineChart() {
   //============================================================
 
   return chart;
-};
+}

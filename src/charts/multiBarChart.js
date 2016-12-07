@@ -105,6 +105,7 @@ export default function multibarChart() {
       var baseDimension = multibar.stacked() ? vertical ? 72 : 32 : 32;
 
       var xValueFormat = function(d, i, selection, noEllipsis) {
+            console.log('arguments: ', arguments);
             // Set axis to use trimmed array rather than data
             var value = groupLabels && Array.isArray(groupLabels) ?
                           groupLabels[i] || d:

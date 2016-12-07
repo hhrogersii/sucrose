@@ -1,5 +1,11 @@
 {
     "multibar": [
+        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
+        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
+        {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
+        {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},
         {"value": "multibar_data", "label": "Forecasting for Q1"},
         {"value": "multibar_data_color", "label": "Forecasting for Q2 (color data)"},
         {"value": "multibar_data_negative", "label": "Forecasting for Q1 (negative)"},
@@ -12,15 +18,28 @@
         {"value": "data_null", "label": "Test Null Data"}
     ],
     "line": [
+        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
+        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
+        {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
+        {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},
+        {"value": "sugar_consumption", "label": "High Fructose Calories per Year"},
         {"value": "line_data", "label": "Test Line Chart Data #1"},
-        {"value": "line_raw_data", "label": "Test Line Chart Data (raw) #2"},
+        {"value": "line_data_raw", "label": "Test Line Chart Data (raw) #2"},
         {"value": "line_data_bar", "label": "Test Bar Data"},
-        {"value": "line_single_data", "label": "Test Single Data Point (time)"},
+        {"value": "line_data_single", "label": "Test Single Data Point (time)"},
         {"value": "line_single_bar", "label": "Test Single Data Point (bar data)"},
         {"value": "line_two_single", "label": "Test Two Single Data Points"},
         {"value": "data_null", "label": "Test Null Data"}
     ],
     "pie": [
+        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
+        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
+        {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
+        {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},
         {"value": "pie_data", "label": "All Opportunities by Lead Source"},
         {"value": "pie_data_quarters", "label": "Test Quarter Labels"},
         {"value": "sugar_data_grouped", "label": "Test Grouped Data"},
@@ -28,6 +47,12 @@
         {"value": "data_null", "label": "Test Null Data"}
     ],
     "funnel": [
+        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
+        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
+        {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
+        {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},
         {"value": "funnel_data", "label": "Opportunity Total by Sales Stage"},
         {"value": "funnel_data_opps", "label": "Opportunity Data"},
         {"value": "funnel_data_long", "label": "Long Label Lengths"},
@@ -58,6 +83,12 @@
         {"value": "data_null", "label": "Test Null Data"}
     ],
     "area": [
+        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
+        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
+        {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
+        {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},
         {"value": "line_data", "label": "Test Line Chart Data #1"},
         {"value": "data_null", "label": "Test Null Data"}
     ],

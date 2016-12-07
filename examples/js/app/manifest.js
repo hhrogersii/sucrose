@@ -287,6 +287,7 @@ var Manifest =
         if ($chart.hasClass('hide')) {
           return;
         }
+        console.log(chart)
         chart.render();
       }).debounce(50) :
       (function (evt) {
