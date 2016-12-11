@@ -10,8 +10,14 @@ function transformDataToD3(json, chartType, barType) {
       valuesAreArrays = false,
       valuesAreDiscrete = false,
       seriesKeys = [],
-      groupLabels = json.label || properties.labels || properties.label || [],
+      groupLabels = properties.groups || json.label || properties.labels || properties.label || [],
       groups = [];
+
+
+  var xIsDatetime = properties.xDataType === 'datetime' || false,
+      xIsOrdinal = properties.xDataType === 'ordinal' || false,
+      xIsNumeric = properties.xDataType === 'numeric' || false,
+      yIsCurrency = properties.yDataType === 'currency' || false;
 
   function pickLabel(d) {
     // d can be [d] or 'd'
@@ -20,11 +26,14 @@ function transformDataToD3(json, chartType, barType) {
   }
 
   function getGroup(d, i) {
-    return {
+    var g = {
       group: i + 1,
       label: pickLabel(d),
-      total: sumValues(d.values)
     };
+    if (d.values) {
+      total: sumValues(d.values)
+    }
+    return g;
   }
 
   function getKey(d) {
@@ -36,7 +45,8 @@ function transformDataToD3(json, chartType, barType) {
   }
 
   function hasValues(d) {
-    return d.values && d.values.filter(function(d) { return d.values && d.values.length; }).length > 0;
+    //true => [{}, {}] || [[], []]
+    return d && d.filter(function(d1) { return d1.values && d1.values.length; }).length > 0;
   }
 
   function dataHasValues(type, d) {
@@ -45,18 +55,15 @@ function transformDataToD3(json, chartType, barType) {
   }
 
   function isArrayOfArrays(d) {
-    return Array.isArray(d.values) && d.values.length && Array.isArray(d.values[0]);
+    return Array.isArray(d) && d.length && Array.isArray(d[0]);
   }
 
   function areDiscreteValues(d) {
     return d3.max(d, function(d1) { return d1.values.length; }) === 1;
   }
 
-  valuesAreArrays = isArrayOfArrays(json);
-  console.log('valuesAreArrays: ', valuesAreArrays);
-
   // process CSV values
-  if (valuesAreArrays) {
+  if (isArrayOfArrays(json.values)) {
     // json.values => [
     //   ["Year", "A", "B", "C"],
     //   [1970, 0.3, 2, 0.1],
@@ -70,8 +77,8 @@ function transformDataToD3(json, chartType, barType) {
     // keys => ["A", "B", "C"]
 
     // reset groupLabels because it will be rebuilt from values
-    groups = [];
-    // label => ["June", "July", "August"]
+    groupLabels = [];
+    // groupLabels => ["June", "July", "August"]
 
     // json.values => [
     //   [1970, 0.3, 2, 0.1],
@@ -79,61 +86,57 @@ function transformDataToD3(json, chartType, barType) {
     //   [1972, 0.7, 3, 0.2]
     // ]
     seriesData = d3.transpose(
-        json.values
-          .map(function(row, i) {
-            // this is a row => [1970, 0.7, 3, 0.2]
-            // this is a row => ["One", 0.7, 3, 0.2]
-            // extract first column as x value
-            var x = row.splice(0, 1)[0];
-            // x => 1970
-            // x => "One"
-            // extract the first column into the properties category label array
-            groups.push(getGroup({label: x, values: row}, i));
+        json.values.map(function(row, i) {
+          // this is a row => [1970, 0.7, 3, 0.2]
+          // this is a row => ["One", 0.7, 3, 0.2]
 
-            return row.map(function(value, j) {
-                // row => [0.7, 3, 0.2]]
-                // first column is integer
-                if (!isNaN(x))
-                {
-                  // if x is an integer date then treating as integer
-                  // is ok because xDataType will force formatting on render
-                  return [parseFloat(x), value];
-                }
-                // ... or datetime
-                else if (sucrose.utility.isValidDate(x))
-                {
-                  // then use the first column as x value
-                  // what about "June 1970"
-                  return [x, value];
-                }
-                // the first column is a string so use ordinal indexing
-                else if (typeof x === 'string')
-                {
-                  // use index as the x value
-                  return [i + 1, value];
-                }
-              });
-          })
+          // extract first column as x value
+          var x = row.splice(0, 1)[0];
+
+          if (xIsOrdinal) {
+            // extract the first column into the properties category label array
+            groupLabels.push(getGroup(x, i));
+          }
+
+          return row.map(function(value, j) {
+              // row => [0.7, 3, 0.2]]
+              // first column is datetime or is numeric
+              if (xIsDatetime || xIsNumeric)
+              {
+                // if x is an integer date then treating as integer
+                // is ok because xDataType will force formatting on render
+                // what about "June 1970"
+                return [x, value];
+              }
+              // ... or is ordinal
+              // increment
+              else if (xIsOrdinal)
+              {
+                return [i + 1, value];
+              }
+            });
+        })
       );
 
     // console.log('seriesData: ', JSON.stringify(seriesData, null, '  '));
 
-    json.values = seriesKeys.map(function(key, i) {
+    data = seriesKeys.map(function(key, i) {
         return {
           key: key,
           values: seriesData[i]
         }
       });
+
+  } else {
+    data = json.data;
   }
 
-  console.log('seriesKeys: ', seriesKeys);
-  console.log('groupLabels: ', groupLabels);
+  console.log('data: ', data);
+  // console.log('seriesKeys: ', seriesKeys);
+  // console.log('groupLabels: ', groupLabels);
 
-  valuesExist = dataHasValues(chartType, json);
+  valuesExist = dataHasValues(chartType, data);
   console.log('valuesExist: ', valuesExist);
-
-  valuesAreDiscrete = areDiscreteValues(json);
-  console.log('valuesAreDiscrete: ', valuesAreDiscrete);
 
   // if (typeWithValues.indexOf(chartType) !== -1) {
   //   if (isArrayOfArrays(json.values)) {
@@ -220,21 +223,55 @@ function transformDataToD3(json, chartType, barType) {
 
       case 'area':
       case 'line':
-        data = json.values
-          .map(function(d, i) {
-              return {
-                  key: getKey(d),
-                  values: valuesAreArrays ?
-                      d.values :
-                        valuesAreDiscrete ?
-                          d.values.map(function(e, j) {
-                              return [i, parseFloat(e)];
-                          }) :
-                          d.values.map(function(e, j) {
-                              return [j, parseFloat(e)];
-                          })
+
+        var formatX =
+          xIsDatetime ?
+            function(d, i, j) {
+              // x => 1970, x => '1/1/1980', x => '1980-1-1', x => 1138683600000
+              // if the date value provided is a year
+              // append day and month parts to get correct UTC offset
+              // x = x + '-1-1';
+              // else if x is an integer date then treating as integer
+              // is ok because xDataType will force formatting on render
+              return new Date(d.toString().length === 4 ? '1/1/' + d.toString() : d);
+            } :
+            xIsOrdinal ?
+              areDiscreteValues(data) ?
+                // expand x for each series
+                // [['a'],['b'],['c']] =>
+                // [[0,'a'],[1,'b'],[2,'c']]
+                function(d, i, j) {
+                  return i;
+                } :
+                // convert flat array to indexed arrays
+                // [['a','b'],['c','d']] => [[[0,'a'],[1,'b']],[[0,'c'],[1,'d']]]
+                function(d, i, j) {
+                  return j;
+                } :
+            xIsNumeric ?
+              function(d, i, j) {
+                return parseFloat(d);
+              } :
+              function(d) {
+                return d;
               };
-          });
+
+        // convert array of arrays into array of objects
+        data.forEach(function(d, i) {
+          d.key = getKey(d);
+          d.values = isArrayOfArrays(d.values) ?
+            // d => [[0,13],[1,18]]
+            d.values.map(function(e, j) {
+              return {x: formatX(e[0], i, j), y: parseFloat(e[1])};
+            }) :
+            // d => [{x:0,y:13},{x:1,y:18}]
+            d.values.map(function(e, j) {
+              e.x = formatX(e.x, i, j);
+              e.y = parseFloat(e.y);
+              return e;
+            });
+        });
+
         break;
 
       case 'gauge':
@@ -252,20 +289,22 @@ function transformDataToD3(json, chartType, barType) {
         break;
     }
 
-    if (!groups.length) {
-      groups = (groupLabels.length ? groupLabels : valuesExist ? json.values : []).map(getGroup);
+    // don't override json.properties entirely, just modify
+    properties.title = properties.title;
+    // properties.yDataType: properties.yDataType,
+    // properties.xDataType: properties.xDataType,
+    properties.colorLength = data.length;
+
+
+    // if (properties.groups && properties.groups.length) {
+    //   properties.groups = properties.groups;
+    // } else
+    if (groupLabels.length) {
+      properties.groups = groupLabels.map(getGroup);
     }
 
-    properties = {
-        title: properties.title,
-
-        yDataType: properties.yDataType,
-        xDataType: properties.xDataType,
-
-        groups: groups,
-
-        colorLength: data.length
-      };
+console.log('properties: ', properties);
+console.log('data: ', data);
 
     return {
       properties: properties,
@@ -416,8 +455,6 @@ function transformTableData(chartData, chartType, Chart) {
     data: data
   };
 }
-
-// var xTickLabels;
 
 function postProcessData(chartData, chartType, Chart) {
 

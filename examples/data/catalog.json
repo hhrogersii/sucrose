@@ -1,8 +1,9 @@
 {
     "multibar": [
-        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
-        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
-        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_datetime_csv", "label": "Test CSV - datetime"},
+        {"value": "test_datetime_string_csv", "label": "Test CSV - datetime string"},
+        {"value": "test_datetime_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_datetime_objects", "label": "Test Objects - datetime"},
         {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
         {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
         {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},
@@ -18,9 +19,10 @@
         {"value": "data_null", "label": "Test Null Data"}
     ],
     "line": [
-        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
-        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
-        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_datetime_csv", "label": "Test CSV - datetime"},
+        {"value": "test_datetime_string_csv", "label": "Test CSV - datetime string"},
+        {"value": "test_datetime_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_datetime_objects", "label": "Test Objects - datetime"},
         {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
         {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
         {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},
@@ -34,9 +36,10 @@
         {"value": "data_null", "label": "Test Null Data"}
     ],
     "pie": [
-        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
-        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
-        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_datetime_csv", "label": "Test CSV - datetime"},
+        {"value": "test_datetime_string_csv", "label": "Test CSV - datetime string"},
+        {"value": "test_datetime_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_datetime_objects", "label": "Test Objects - datetime"},
         {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
         {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
         {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},
@@ -47,9 +50,10 @@
         {"value": "data_null", "label": "Test Null Data"}
     ],
     "funnel": [
-        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
-        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
-        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_datetime_csv", "label": "Test CSV - datetime"},
+        {"value": "test_datetime_string_csv", "label": "Test CSV - datetime string"},
+        {"value": "test_datetime_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_datetime_objects", "label": "Test Objects - datetime"},
         {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
         {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
         {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},
@@ -83,9 +87,9 @@
         {"value": "data_null", "label": "Test Null Data"}
     ],
     "area": [
-        {"value": "test_dimension_csv", "label": "Test CSV - datetime"},
-        {"value": "test_dimension_transposed", "label": "Test Transposed - datetime"},
-        {"value": "test_dimension_objects", "label": "Test Objects - datetime"},
+        {"value": "test_datetime_csv", "label": "Test CSV - datetime"},
+        {"value": "test_datetime_transposed", "label": "Test Transposed - datetime"},
+        {"value": "test_datetime_objects", "label": "Test Objects - datetime"},
         {"value": "test_ordinal_csv", "label": "Test CSV - ordinal"},
         {"value": "test_ordinal_transposed", "label": "Test Transposed - ordinal"},
         {"value": "test_ordinal_objects", "label": "Test Objects - ordinal"},

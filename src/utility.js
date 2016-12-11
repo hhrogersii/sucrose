@@ -612,43 +612,34 @@ utility.dateFormat = function(d, p, l) {
       formatYear = "%Y";
 
   function multiFormat(d) {
-
     var date = new Date(d.valueOf() + d.getTimezoneOffset() * 60000);
     var format;
     if (d3.timeSecond(date) < d) {
-      console.log('formatMillisecond', d3.timeSecond(date))
       format = formatMillisecond;
     } else if (d3.timeMinute(date) < d) {
-      console.log('formatSecond', d3.timeMinute(date))
       format = formatSecond;
     } else if (d3.timeHour(date) < d) {
-      console.log('formatMinute', d3.timeHour(date))
       format = formatMinute;
     } else if (d3.timeDay(date) < d) {
-      console.log('formatHour', d3.timeDay(date))
       format = formatHour;
     } else if (d3.timeMonth(date) < d) {
-      console.log('formatWeek', d3.timeMonth(date))
       format = formatDay;
       // format = (d3.timeWeek(date) < date ? formatDay : formatWeek);
     } else if (d3.timeYear(date) < d) {
-      console.log('formatMonth', d3.timeYear(date))
       format = formatMonth;
     } else {
-      console.log('formatYear')
       format = formatYear;
     }
-
-    console.log(format, date.toUTCString())
     return format;
   }
 
   dateString = d.toString();
-  console.log('dateString: ', dateString);
+
   // if the date value provided is a year
   if (dateString.length === 4) {
     // append day and month parts to get correct UTC offset
-    dateString = '1/1/' + dateString;
+    // dateString = dateString + '-1-1';
+    // dateString = '1/1/' + dateString;
   }
   date = new Date(dateString);
 

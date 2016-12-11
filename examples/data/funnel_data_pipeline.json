@@ -4,7 +4,7 @@
     "total": "11981.700000",
     "scale": 1000,
     "units": "€",
-    "xDataType": "string",
+    "xDataType": "ordinal",
     "yDataType": "currency"
   },
   "data": [

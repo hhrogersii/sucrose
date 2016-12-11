@@ -21,6 +21,6 @@
     "value": 3,
     "label": 2,
     "yDataType": "numeric",
-    "xDataType": "string"
+    "xDataType": "ordinal"
   }
 }

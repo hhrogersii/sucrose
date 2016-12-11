@@ -1,16 +1,11 @@
 {
   "properties": {
     "title": "Total is 100",
-    "labels": [
+    "groups": [
       {
         "group": 1,
-        "l": "September 2015"
-      }
-    ],
-    "values": [
-      {
-        "group": 1,
-        "t": 100
+        "label": "September 2015",
+        "total": 100
       }
     ]
   },

@@ -77,11 +77,13 @@ export default function axis() {
       thickness = 0;
 
       if (ticks !== null) {
+        console.log('ticks: ', ticks);
         axis.ticks(ticks);
       } else if (vertical) {
         axis.ticks(Math.ceil(scaleWidth / 48));
       } else {
         axis.ticks(Math.ceil(scaleWidth / 100));
+        console.log('axis.ticks', Math.ceil(scaleWidth / 100))
       }
 
       // test to see if rotateTicks was passed as a boolean

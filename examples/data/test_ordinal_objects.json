@@ -4,7 +4,7 @@
     "source": "SugarCRM",
     "last_updated": "7/8/2016",
     "yDataType": "integer",
-    "xDataType": "string",
+    "xDataType": "ordinal",
     "groups": [
       {"label": "One"},
       {"label": "Two"},

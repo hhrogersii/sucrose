@@ -679,14 +679,12 @@ var Manifest =
    * LOAD DATA functions ---- */
 
   parseRawData: function (json) {
-    Data = json;
     if (this.type === 'treemap' || this.type === 'tree' || this.type === 'globe') {
+      Data = json;
       this.colorLength = 0;
     } else {
       // raw data from Report API
-      if (!json.data) {
-        Data = transformDataToD3(json, this.type);
-      }
+      Data = transformDataToD3(json, this.type);
       this.colorLength = Data.properties.colorLength || Data.data.length;
       postProcessData(Data, this.type, this.Chart);
     }
