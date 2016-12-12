@@ -3,8 +3,8 @@
     "title": "Table 1 - Test data after CSV data has been transposed into series data",
     "source": "SugarCRM",
     "last_updated": "7/8/2016",
-    "yDataType": "integer",
     "xDataType": "ordinal",
+    "yDataType": "numeric",
     "groups": [
       {"label": "One"},
       {"label": "Two"},

@@ -131,12 +131,12 @@ function transformDataToD3(json, chartType, barType) {
     data = json.data;
   }
 
-  console.log('data: ', data);
+  // console.log('data: ', data);
   // console.log('seriesKeys: ', seriesKeys);
   // console.log('groupLabels: ', groupLabels);
 
   valuesExist = dataHasValues(chartType, data);
-  console.log('valuesExist: ', valuesExist);
+  // console.log('valuesExist: ', valuesExist);
 
   // if (typeWithValues.indexOf(chartType) !== -1) {
   //   if (isArrayOfArrays(json.values)) {
@@ -241,12 +241,12 @@ function transformDataToD3(json, chartType, barType) {
                 // [['a'],['b'],['c']] =>
                 // [[0,'a'],[1,'b'],[2,'c']]
                 function(d, i, j) {
-                  return i;
+                  return i + 1;
                 } :
                 // convert flat array to indexed arrays
                 // [['a','b'],['c','d']] => [[[0,'a'],[1,'b']],[[0,'c'],[1,'d']]]
                 function(d, i, j) {
-                  return j;
+                  return j + 1;
                 } :
             xIsNumeric ?
               function(d, i, j) {
@@ -257,19 +257,24 @@ function transformDataToD3(json, chartType, barType) {
               };
 
         // convert array of arrays into array of objects
-        data.forEach(function(d, i) {
-          d.key = getKey(d);
-          d.values = isArrayOfArrays(d.values) ?
+        data.forEach(function(s, i) {
+          s.seriesIndex = i;
+          s.key = getKey(s);
+          s.values = isArrayOfArrays(s.values) ?
             // d => [[0,13],[1,18]]
-            d.values.map(function(e, j) {
-              return {x: formatX(e[0], i, j), y: parseFloat(e[1])};
+            s.values.map(function(v, j) {
+              return {x: formatX(v[0], i, j), y: parseFloat(v[1])};
             }) :
             // d => [{x:0,y:13},{x:1,y:18}]
-            d.values.map(function(e, j) {
-              e.x = formatX(e.x, i, j);
-              e.y = parseFloat(e.y);
-              return e;
+            s.values.map(function(v, j) {
+              v.x = formatX(v.x, i, j);
+              v.y = parseFloat(v.y);
+              return v;
             });
+          s.total = d3.sum(s.values, function(d) { return d.y; });
+          if (!s.total) {
+            s.disabled = true;
+          }
         });
 
         break;
@@ -295,7 +300,6 @@ function transformDataToD3(json, chartType, barType) {
     // properties.xDataType: properties.xDataType,
     properties.colorLength = data.length;
 
-
     // if (properties.groups && properties.groups.length) {
     //   properties.groups = properties.groups;
     // } else
@@ -303,8 +307,8 @@ function transformDataToD3(json, chartType, barType) {
       properties.groups = groupLabels.map(getGroup);
     }
 
-console.log('properties: ', properties);
-console.log('data: ', data);
+// console.log('properties: ', properties);
+// console.log('data: ', data);
 
     return {
       properties: properties,

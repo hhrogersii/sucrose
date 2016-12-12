@@ -3,8 +3,8 @@
     "title": "Table 52 -- High fructose corn syrup: estimated number of per capita calories consumed daily, by calendar year",
     "source": "USDA, ERS, Sugar and Sweeteners Outlook.",
     "last_updated": "6/7/2016",
-    "yDataType": "integer",
-    "xDataType": "datetime"
+    "xDataType": "datetime",
+    "yDataType": "numeric"
   },
   "values": [
     [

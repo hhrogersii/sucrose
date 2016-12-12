@@ -99,7 +99,7 @@ export default function lineChart() {
               xIsOrdinal && xTickLabels.length ?
                 // label
                 xTickLabels[i] :
-                // integer
+                // numeric
                 d;
             // console.log('d: ', d, i);
             return label;
@@ -145,31 +145,32 @@ export default function lineChart() {
 
       // set title display option
       showTitle = showTitle && properties.title;
-console.log('xIsDatetime: ', xIsDatetime);
+// console.log('xIsDatetime: ', xIsDatetime);
 
       // add series index to each data point for reference
       // and disable data series if total is zero
-      data.map(function(s, i) {
-        s.seriesIndex = i;
-        s.values.each(function(d, i) {
-          var x = model.x()(d, i);
-          if (xIsDatetime) {
-            // x => 1970, x => '1/1/1980', x => '1980-1-1', x => 1138683600000
-            // if the date value provided is a year
-            // is ok because xDataType will force formatting on render
-            // append day and month parts to get correct UTC offset
-            // console.log(x)
-            x = new Date(x.toString().length !== 4 ? '1/1/' + x.toString() : x);
-          } else if (xIsNumeric) {
-            x = parseFloat(x);
-          }
-          return {x: x, y: isArrayData ? d[1] : d.y};
-        })
-        s.total = d3.sum(s.values, model.y());
-        if (!s.total) {
-          s.disabled = true;
-        }
-      });
+      // data.map(function(s, i) {
+      //   // s.seriesIndex = i;
+      //   // s.values.each(function(d, i) {
+      //   //   var x = model.x()(d, i);
+      //   //   if (xIsDatetime) {
+      //   //     // x => 1970, x => '1/1/1980', x => '1980-1-1', x => 1138683600000
+      //   //     // if the date value provided is a year
+      //   //     // is ok because xDataType will force formatting on render
+      //   //     // append day and month parts to get correct UTC offset
+      //   //     // console.log(x)
+      //   //     x = new Date(x.toString().length !== 4 ? '1/1/' + x.toString() : x);
+      //   //   } else if (xIsNumeric) {
+      //   //     x = parseFloat(x);
+      //   //   }
+      //   //   return {x: x, y: isArrayData ? d[1] : d.y};
+      //   //   return {x: model.x()(d, i), y: model.y()(d, i)};
+      //   // })
+      //   // s.total = d3.sum(s.values, model.y());
+      //   if (!s.total) {
+      //     s.disabled = true;
+      //   }
+      // });
 console.log('data: ', data);
       xTickLabels = labels.map(function(d) {
           return [].concat(d)[0] || chart.strings().noLabel;
@@ -301,10 +302,10 @@ console.log('xTickLabels: ', xTickLabels);
           .yDomain(null);
         xAxis
           .orient('bottom')
-          .ticks(5)
-          // .ticks(null)
-          // .tickValues(xIsOrdinal ? d3.range(1, xTickLabels.length + 1) : null)
-          .tickValues(null)
+          // .ticks(modelData.length)
+          .ticks(null)
+          .tickValues(xIsOrdinal ? d3.range(1, xTickLabels.length + 1) : null)
+          // .tickValues(null)
           .showMaxMin(xIsDatetime)
           .highlightZero(false);
         yAxis
