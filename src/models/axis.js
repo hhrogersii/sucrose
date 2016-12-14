@@ -75,7 +75,7 @@ export default function axis() {
       //------------------------------------------------------------
       // reset public readonly variables
       thickness = 0;
-
+console.log('data: ', data);
       if (ticks !== null) {
         console.log('ticks: ', ticks);
         axis.ticks(ticks);

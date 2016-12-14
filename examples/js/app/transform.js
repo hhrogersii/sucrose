@@ -118,8 +118,6 @@ function transformDataToD3(json, chartType, barType) {
         })
       );
 
-    // console.log('seriesData: ', JSON.stringify(seriesData, null, '  '));
-
     data = seriesKeys.map(function(key, i) {
         return {
           key: key,
@@ -131,15 +129,7 @@ function transformDataToD3(json, chartType, barType) {
     data = json.data;
   }
 
-  // console.log('data: ', data);
-  // console.log('seriesKeys: ', seriesKeys);
-  // console.log('groupLabels: ', groupLabels);
-
   valuesExist = dataHasValues(chartType, data);
-  // console.log('valuesExist: ', valuesExist);
-
-  // if (typeWithValues.indexOf(chartType) !== -1) {
-  //   if (isArrayOfArrays(json.values)) {
 
   if (valuesExist) {
     // json.values => [[],[]] or [{},{}]
@@ -306,9 +296,6 @@ function transformDataToD3(json, chartType, barType) {
     if (groupLabels.length) {
       properties.groups = groupLabels.map(getGroup);
     }
-
-// console.log('properties: ', properties);
-// console.log('data: ', data);
 
     return {
       properties: properties,

@@ -617,7 +617,7 @@ utility.dateFormat = function(d, p, l) {
       formatSecond = ":%S",
       formatMinute = "%I:%M",
       formatHour = "%I %p",
-      formatDay = "%a %d",
+      formatDay = "%x",
       formatWeek = "%b %d",
       formatMonth = "%B",
       formatYear = "%Y";
@@ -973,7 +973,7 @@ function axis() {
       //------------------------------------------------------------
       // reset public readonly variables
       thickness = 0;
-
+console.log('data: ', data);
       if (ticks !== null) {
         console.log('ticks: ', ticks);
         axis.ticks(ticks);
@@ -11289,26 +11289,39 @@ function lineChart() {
 
       var properties = chartData ? chartData.properties : {},
           data = chartData ? chartData.data : null,
-          labels = properties.groups ? properties.groups.map(function(d) { return d.label || d.l || d; }) : [];
+          xTickLabels = properties.groups ? properties.groups.map(function(d) { return d.label || d.l || d || chart.strings().noLabel; }) : [];
 
       var containerWidth = parseInt(container.style('width'), 10),
           containerHeight = parseInt(container.style('height'), 10);
 
       var modelData = [],
-          xTickLabels = [],
+          uniqueXValues = d3.merge(
+              data.map(function(d) {
+                return d.values;
+              })
+            )
+            .reduce(function(a, b) {
+                if (!a[b.x]) {
+                  a[b.x] = b.y;
+                } else {
+                  a[b.x] += b.y;
+                }
+                return a;
+              }, {}
+            ),
+          xTickCount = xTickLabels.length || Object.getOwnPropertyNames(uniqueXValues).length,
           totalAmount = 0,
-          singlePoint = false,
-          showMaxMin = false,
-          isArrayData = true,
-          xIsDatetime = chartData.properties.xDataType === 'datetime' || false,
+          singlePoint = false;
+
+      var xIsDatetime = chartData.properties.xDataType === 'datetime' || false,
           xIsOrdinal = chartData.properties.xDataType === 'ordinal' || false,
           xIsNumeric = chartData.properties.xDataType === 'numeric' || false,
           yIsCurrency = chartData.properties.yDataType === 'currency' || false;
 
+      // var dateFormat = xIsDatetime ? uniqueXValues. : 'multi';
+
       var xTickFormat = function(d, i, selection) {
-            // console.log('xTickFormat arguments: ', arguments, xIsDatetime);
-            var label;
-            label = xIsDatetime ?
+            return xIsDatetime ?
               // date
               utility.dateFormat(d, 'multi', chart.locality()) : //TODO: formatter should be set by data
               xIsOrdinal && xTickLabels.length ?
@@ -11316,12 +11329,9 @@ function lineChart() {
                 xTickLabels[i] :
                 // numeric
                 d;
-            // console.log('d: ', d, i);
-            return label;
           };
 
       var yTickFormat = function(d, i, selection) {
-            // console.log('yTickFormat arguments: ', arguments);
             return utility.numberFormatSI(d, 2, yIsCurrency, chart.locality());
           };
 
@@ -11349,72 +11359,18 @@ function lineChart() {
       //------------------------------------------------------------
       // Process data
 
-      isArrayData = Array.isArray(data[0].values[0]);
-      if (isArrayData) {
-        model.x(function(d) { return d ? d[0] : 0; });
-        model.y(function(d) { return d ? d[1] : 0; });
-      } else {
-        model.x(function(d) { return d.x; });
-        model.y(function(d) { return d.y; });
-      }
-
       // set title display option
       showTitle = showTitle && properties.title;
-// console.log('xIsDatetime: ', xIsDatetime);
 
-      // add series index to each data point for reference
-      // and disable data series if total is zero
-      // data.map(function(s, i) {
-      //   // s.seriesIndex = i;
-      //   // s.values.each(function(d, i) {
-      //   //   var x = model.x()(d, i);
-      //   //   if (xIsDatetime) {
-      //   //     // x => 1970, x => '1/1/1980', x => '1980-1-1', x => 1138683600000
-      //   //     // if the date value provided is a year
-      //   //     // is ok because xDataType will force formatting on render
-      //   //     // append day and month parts to get correct UTC offset
-      //   //     // console.log(x)
-      //   //     x = new Date(x.toString().length !== 4 ? '1/1/' + x.toString() : x);
-      //   //   } else if (xIsNumeric) {
-      //   //     x = parseFloat(x);
-      //   //   }
-      //   //   return {x: x, y: isArrayData ? d[1] : d.y};
-      //   //   return {x: model.x()(d, i), y: model.y()(d, i)};
-      //   // })
-      //   // s.total = d3.sum(s.values, model.y());
-      //   if (!s.total) {
-      //     s.disabled = true;
-      //   }
-      // });
-console.log('data: ', data);
-      xTickLabels = labels.map(function(d) {
-          return [].concat(d)[0] || chart.strings().noLabel;
-        });
-console.log('xTickLabels: ', xTickLabels);
-
-      // TODO: what if the dimension is a numerical range?
-      // xValuesAreDates = xTickLabels.length ?
-      //       utility.isValidDate(xTickLabels[0]) :
-      //       utility.isValidDate(model.x()(data[0].values[0]));
-      // xValuesAreDates = isArrayData && utility.isValidDate(data[0].values[0][0]);
-
-      // SAVE FOR LATER
-      // isOrdinalSeries = !xValuesAreDates && labels.length > 0 && d3.min(modelData, function(d) {
-      //   return d3.min(d.values, function(d, i) {
-      //     return model.x()(d, i);
-      //   });
-      // }) > 0;
-
-      modelData = data.filter(function(d) {
-          return !d.disabled;
-        });
+      modelData = data.filter(function(d) { return !d.disabled; });
 
       // safety array
-      modelData = modelData.length ? modelData : [{series: 0, total: 0, disabled: true, values: []}];
+      if (!modelData.length) {
+        modelData = [{seriesIndex: 0, key: "Empty", total: 0, disabled: true, values: []}];
+      }
 
-      totalAmount = d3.sum(modelData, function(d) {
-          return d.total;
-        });
+
+      totalAmount = d3.sum(modelData, function(d) { return d.total; });
 
       //------------------------------------------------------------
       // Display No Data message if there's nothing to show.
@@ -11517,10 +11473,7 @@ console.log('xTickLabels: ', xTickLabels);
           .yDomain(null);
         xAxis
           .orient('bottom')
-          // .ticks(modelData.length)
-          .ticks(null)
           .tickValues(xIsOrdinal ? d3.range(1, xTickLabels.length + 1) : null)
-          // .tickValues(null)
           .showMaxMin(xIsDatetime)
           .highlightZero(false);
         yAxis
@@ -11538,8 +11491,6 @@ console.log('xTickLabels: ', xTickLabels);
         .scale(x)
         .tickPadding(6)
         .tickFormat(xTickFormat);
-        // .ticks(3)
-        // .ticks(xTickLabels.length || null);
       yAxis
         .scale(y)
         .tickPadding(6)
@@ -11747,6 +11698,7 @@ console.log('xTickLabels: ', xTickLabels);
         // X-Axis
         // resize ticks based on new dimensions
         xAxis
+          .ticks(xIsOrdinal ? xTickCount : Math.min(Math.ceil(innerWidth / 100), xTickCount))
           .tickSize(-innerHeight + (lines.padData() ? pointRadius : 0), 0)
           .margin(innerMargin);
         xAxis_wrap
