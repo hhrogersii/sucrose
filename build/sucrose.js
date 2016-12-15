@@ -610,6 +610,34 @@ utility.isValidDate = function(d) {
   return testDate instanceof Date && !isNaN(testDate.valueOf());
 };
 
+utility.getDateFormat = function(values) {
+  var dateFormats = ['multi', '.%L', ':%S', '%I:%M', '%I %p', '%x', '%b %d', '%B', '%Y']; //TODO: use locality format strings mmmmY, etc.
+  var formatIndex = 0;
+
+  formatIndex = values.length ? d3.min(values, function(d) {
+      var date = new Date(d.valueOf() + d.getTimezoneOffset() * 60000);
+      var format;
+      if (d3.timeSecond(date) < d) {
+        format = 1;
+      } else if (d3.timeMinute(date) < d) {
+        format = 2;
+      } else if (d3.timeHour(date) < d) {
+        format = 3;
+      } else if (d3.timeDay(date) < d) {
+        format = 4;
+      } else if (d3.timeMonth(date) < d) {
+        format = 5;
+        // format = (d3.timeWeek(date) < date ? 4 : 5);
+      } else if (d3.timeYear(date) < d) {
+        format = 6;
+      } else {
+        format = 8;
+      }
+      return format;
+    }) : 0;
+  return dateFormats[formatIndex];
+};
+
 utility.dateFormat = function(d, p, l) {
   var dateString, date, locale, spec, fmtr;
 
@@ -973,15 +1001,13 @@ function axis() {
       //------------------------------------------------------------
       // reset public readonly variables
       thickness = 0;
-console.log('data: ', data);
+
       if (ticks !== null) {
-        console.log('ticks: ', ticks);
         axis.ticks(ticks);
       } else if (vertical) {
         axis.ticks(Math.ceil(scaleWidth / 48));
       } else {
         axis.ticks(Math.ceil(scaleWidth / 100));
-        console.log('axis.ticks', Math.ceil(scaleWidth / 100));
       }
 
       // test to see if rotateTicks was passed as a boolean
@@ -6257,9 +6283,6 @@ function scatter() {
       };
 
       function resetScale() {
-        console.log('xDomain: ', xDomain);
-        console.log('xExtent: ', d3.extent(seriesData.map(getX)));
-
         // WHEN GETX RETURN 1970, THIS FAILS, BECAUSE X IS A DATETIME SCALE
         // RESOLVE BY MAKING SURE GETX RETURN A DATE OBJECT WHEN X SCALE IS DATETIME
 
@@ -6317,7 +6340,7 @@ function scatter() {
               x.domain([x.domain()[0] - x.domain()[0] * 0.1, x.domain()[1] + x.domain()[1] * 0.1]) :
               x.domain([-1, 1]);
         }
-console.log('x.domain(): ', x.domain());
+
         if (y.domain()[0] === y.domain()[1]) {
           y.domain()[0] ?
               y.domain([y.domain()[0] - y.domain()[0] * 0.1, y.domain()[1] + y.domain()[1] * 0.1]) :
@@ -11234,8 +11257,6 @@ function lineChart() {
       delay = 0,
       duration = 0,
       tooltips = true,
-      x,
-      y,
       state = {},
       strings = {
         legend: {close: 'Hide legend', open: 'Show legend'},
@@ -11243,8 +11264,11 @@ function lineChart() {
         noData: 'No Data Available.',
         noLabel: 'undefined'
       },
-      pointRadius = 2,
       dispatch = d3.dispatch('chartClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState');
+
+  var pointRadius = 2,
+      x,
+      y;
 
   //============================================================
   // Private Variables
@@ -11288,42 +11312,44 @@ function lineChart() {
           modelClass = 'line';
 
       var properties = chartData ? chartData.properties : {},
-          data = chartData ? chartData.data : null,
-          xTickLabels = properties.groups ? properties.groups.map(function(d) { return d.label || d.l || d || chart.strings().noLabel; }) : [];
+          data = chartData ? chartData.data : null;
 
       var containerWidth = parseInt(container.style('width'), 10),
           containerHeight = parseInt(container.style('height'), 10);
-
-      var modelData = [],
-          uniqueXValues = d3.merge(
-              data.map(function(d) {
-                return d.values;
-              })
-            )
-            .reduce(function(a, b) {
-                if (!a[b.x]) {
-                  a[b.x] = b.y;
-                } else {
-                  a[b.x] += b.y;
-                }
-                return a;
-              }, {}
-            ),
-          xTickCount = xTickLabels.length || Object.getOwnPropertyNames(uniqueXValues).length,
-          totalAmount = 0,
-          singlePoint = false;
 
       var xIsDatetime = chartData.properties.xDataType === 'datetime' || false,
           xIsOrdinal = chartData.properties.xDataType === 'ordinal' || false,
           xIsNumeric = chartData.properties.xDataType === 'numeric' || false,
           yIsCurrency = chartData.properties.yDataType === 'currency' || false;
 
-      // var dateFormat = xIsDatetime ? uniqueXValues. : 'multi';
+      var modelData = [],
+          totalAmount = 0,
+          singlePoint = false;
+
+      var xTickLabels = properties.groups ?
+            properties.groups.map(function(d) {
+              return d.label || d.l || d || chart.strings().noLabel;
+            }) : [],
+          xTickValues = !xTickLabels.length ?
+            d3.merge(
+                data.map(function(d) {
+                  return d.values;
+                })
+              )
+              .reduce(function(a, b) {
+                if (a.indexOf(b.x) === -1) {
+                  a.push(b.x);
+                }
+                return a;
+              }, []) : [],
+          xTickCount = xTickLabels.length || xTickValues.length;
+
+      var xDateFormat = xIsDatetime ? utility.getDateFormat(xTickValues) : 'multi';
 
       var xTickFormat = function(d, i, selection) {
             return xIsDatetime ?
               // date
-              utility.dateFormat(d, 'multi', chart.locality()) : //TODO: formatter should be set by data
+              utility.dateFormat(d, xDateFormat, chart.locality()) : //TODO: formatter should be set by data
               xIsOrdinal && xTickLabels.length ?
                 // label
                 xTickLabels[i] :
@@ -11366,9 +11392,8 @@ function lineChart() {
 
       // safety array
       if (!modelData.length) {
-        modelData = [{seriesIndex: 0, key: "Empty", total: 0, disabled: true, values: []}];
+        modelData = [{seriesIndex: 0, key: 'Empty', total: 0, disabled: true, values: []}];
       }
-
 
       totalAmount = d3.sum(modelData, function(d) { return d.total; });
 
@@ -12073,11 +12098,9 @@ function multibarChart() {
       showControls = false,
       showLegend = true,
       direction = 'ltr',
-      tooltips = true,
-      x,
-      y,
       delay = 0,
       duration = 0,
+      tooltips = true,
       state = {},
       strings = {
         legend: {close: 'Hide legend', open: 'Show legend'},
@@ -12085,11 +12108,14 @@ function multibarChart() {
         noData: 'No Data Available.',
         noLabel: 'undefined'
       },
-      vertical = true,
+      dispatch = d3.dispatch('chartClick', 'elementClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState');
+
+  var vertical = true,
       scrollEnabled = true,
       overflowHandler = function(d) { return; },
-      hideEmptyGroups = true,
-      dispatch = d3.dispatch('chartClick', 'elementClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState');
+      x,
+      y,
+      hideEmptyGroups = true;
 
   //============================================================
   // Private Variables
@@ -12149,20 +12175,22 @@ function multibarChart() {
       var availableWidth = width;
       var availableHeight = height;
 
+      var xIsDatetime = chartData.properties.xDataType === 'datetime' || false,
+          xIsOrdinal = chartData.properties.xDataType === 'ordinal' || false,
+          xIsNumeric = chartData.properties.xDataType === 'numeric' || false,
+          yIsCurrency = chartData.properties.yDataType === 'currency' || false;
+
       var seriesData = [],
           seriesCount = 0,
           groupData = [],
           groupLabels = [],
           groupCount = 0,
           totalAmount = 0,
-          hasData = false,
-          xIsDatetime = chartData.properties.xDataType === 'datetime' || false,
-          yIsCurrency = chartData.properties.yDataType === 'currency' || false;
+          hasData = false;
 
       var baseDimension = multibar.stacked() ? vertical ? 72 : 32 : 32;
 
       var xValueFormat = function(d, i, selection, noEllipsis) {
-            console.log('arguments: ', arguments);
             // Set axis to use trimmed array rather than data
             var value = groupLabels && Array.isArray(groupLabels) ?
                           groupLabels[i] || d:

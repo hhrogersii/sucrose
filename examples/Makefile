@@ -57,8 +57,8 @@ all: sucrose lib
 sucrose: clean-sucrose
 	cp ../build/sucrose.js js/sucrose.js
 	cp ../build/sucrose.min.js js/sucrose.min.js
-	cp ../build/sucrose.css css/sucrose.css
-	cp ../build/sucrose.min.css css/sucrose.min.css
+	# cp ../build/sucrose.css css/sucrose.css
+	# cp ../build/sucrose.min.css css/sucrose.min.css
 
 clean-sucrose:
 	rm -rf js/sucrose.js js/sucrose.min.js \

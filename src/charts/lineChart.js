@@ -19,8 +19,6 @@ export default function lineChart() {
       delay = 0,
       duration = 0,
       tooltips = true,
-      x,
-      y,
       state = {},
       strings = {
         legend: {close: 'Hide legend', open: 'Show legend'},
@@ -28,8 +26,11 @@ export default function lineChart() {
         noData: 'No Data Available.',
         noLabel: 'undefined'
       },
-      pointRadius = 2,
       dispatch = d3.dispatch('chartClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState');
+
+  var pointRadius = 2,
+      x,
+      y;
 
   //============================================================
   // Private Variables
@@ -73,42 +74,44 @@ export default function lineChart() {
           modelClass = 'line';
 
       var properties = chartData ? chartData.properties : {},
-          data = chartData ? chartData.data : null,
-          xTickLabels = properties.groups ? properties.groups.map(function(d) { return d.label || d.l || d || chart.strings().noLabel; }) : [];
+          data = chartData ? chartData.data : null;
 
       var containerWidth = parseInt(container.style('width'), 10),
           containerHeight = parseInt(container.style('height'), 10);
-
-      var modelData = [],
-          uniqueXValues = d3.merge(
-              data.map(function(d) {
-                return d.values;
-              })
-            )
-            .reduce(function(a, b) {
-                if (!a[b.x]) {
-                  a[b.x] = b.y;
-                } else {
-                  a[b.x] += b.y;
-                }
-                return a;
-              }, {}
-            ),
-          xTickCount = xTickLabels.length || Object.getOwnPropertyNames(uniqueXValues).length,
-          totalAmount = 0,
-          singlePoint = false;
 
       var xIsDatetime = chartData.properties.xDataType === 'datetime' || false,
           xIsOrdinal = chartData.properties.xDataType === 'ordinal' || false,
           xIsNumeric = chartData.properties.xDataType === 'numeric' || false,
           yIsCurrency = chartData.properties.yDataType === 'currency' || false;
 
-      // var dateFormat = xIsDatetime ? uniqueXValues. : 'multi';
+      var modelData = [],
+          totalAmount = 0,
+          singlePoint = false;
+
+      var xTickLabels = properties.groups ?
+            properties.groups.map(function(d) {
+              return d.label || d.l || d || chart.strings().noLabel;
+            }) : [],
+          xTickValues = !xTickLabels.length ?
+            d3.merge(
+                data.map(function(d) {
+                  return d.values;
+                })
+              )
+              .reduce(function(a, b) {
+                if (a.indexOf(b.x) === -1) {
+                  a.push(b.x);
+                }
+                return a;
+              }, []) : [],
+          xTickCount = xTickLabels.length || xTickValues.length;
+
+      var xDateFormat = xIsDatetime ? utility.getDateFormat(xTickValues) : 'multi';
 
       var xTickFormat = function(d, i, selection) {
             return xIsDatetime ?
               // date
-              utility.dateFormat(d, 'multi', chart.locality()) : //TODO: formatter should be set by data
+              utility.dateFormat(d, xDateFormat, chart.locality()) : //TODO: formatter should be set by data
               xIsOrdinal && xTickLabels.length ?
                 // label
                 xTickLabels[i] :
@@ -151,9 +154,8 @@ export default function lineChart() {
 
       // safety array
       if (!modelData.length) {
-        modelData = [{seriesIndex: 0, key: "Empty", total: 0, disabled: true, values: []}];
+        modelData = [{seriesIndex: 0, key: 'Empty', total: 0, disabled: true, values: []}];
       }
-
 
       totalAmount = d3.sum(modelData, function(d) { return d.total; });
 

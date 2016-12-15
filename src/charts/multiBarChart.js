@@ -16,11 +16,9 @@ export default function multibarChart() {
       showControls = false,
       showLegend = true,
       direction = 'ltr',
-      tooltips = true,
-      x,
-      y,
       delay = 0,
       duration = 0,
+      tooltips = true,
       state = {},
       strings = {
         legend: {close: 'Hide legend', open: 'Show legend'},
@@ -28,11 +26,14 @@ export default function multibarChart() {
         noData: 'No Data Available.',
         noLabel: 'undefined'
       },
-      vertical = true,
+      dispatch = d3.dispatch('chartClick', 'elementClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState');
+
+  var vertical = true,
       scrollEnabled = true,
       overflowHandler = function(d) { return; },
-      hideEmptyGroups = true,
-      dispatch = d3.dispatch('chartClick', 'elementClick', 'tooltipShow', 'tooltipHide', 'tooltipMove', 'stateChange', 'changeState');
+      x,
+      y,
+      hideEmptyGroups = true;
 
   //============================================================
   // Private Variables
@@ -92,20 +93,22 @@ export default function multibarChart() {
       var availableWidth = width;
       var availableHeight = height;
 
+      var xIsDatetime = chartData.properties.xDataType === 'datetime' || false,
+          xIsOrdinal = chartData.properties.xDataType === 'ordinal' || false,
+          xIsNumeric = chartData.properties.xDataType === 'numeric' || false,
+          yIsCurrency = chartData.properties.yDataType === 'currency' || false;
+
       var seriesData = [],
           seriesCount = 0,
           groupData = [],
           groupLabels = [],
           groupCount = 0,
           totalAmount = 0,
-          hasData = false,
-          xIsDatetime = chartData.properties.xDataType === 'datetime' || false,
-          yIsCurrency = chartData.properties.yDataType === 'currency' || false;
+          hasData = false;
 
       var baseDimension = multibar.stacked() ? vertical ? 72 : 32 : 32;
 
       var xValueFormat = function(d, i, selection, noEllipsis) {
-            console.log('arguments: ', arguments);
             // Set axis to use trimmed array rather than data
             var value = groupLabels && Array.isArray(groupLabels) ?
                           groupLabels[i] || d:

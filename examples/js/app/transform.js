@@ -1,6 +1,6 @@
 
 function transformDataToD3(json, chartType, barType) {
-
+console.log('json: ', json);
   var data = [],
       seriesData,
       properties = json.properties ? Array.isArray(json.properties) ? json.properties[0] : json.properties : {},
@@ -46,11 +46,13 @@ function transformDataToD3(json, chartType, barType) {
 
   function hasValues(d) {
     //true => [{}, {}] || [[], []]
+    console.log('d: ', d);
     return d && d.filter(function(d1) { return d1.values && d1.values.length; }).length > 0;
   }
 
   function dataHasValues(type, d) {
-      var valueTypes = ['bar', 'line', 'area', 'pie', 'funnel', 'gauge'];
+    console.log('type: ', type);
+      var valueTypes = ['multibar', 'line', 'area', 'pie', 'funnel', 'gauge'];
       return valueTypes.indexOf(type) !== -1 && hasValues(d);
   }
 
@@ -129,7 +131,11 @@ function transformDataToD3(json, chartType, barType) {
     data = json.data;
   }
 
+console.log('data: ', data);
+
   valuesExist = dataHasValues(chartType, data);
+
+console.log('valuesExist: ', valuesExist);
 
   if (valuesExist) {
     // json.values => [[],[]] or [{},{}]
@@ -344,7 +350,7 @@ function transformDataToD3(json, chartType, barType) {
         break;
 
     }
-
+console.log('chartData: ', chartData);
     return chartData;
 
   }
@@ -493,7 +499,7 @@ function postProcessData(chartData, chartType, Chart) {
       break;
 
     case 'multibar':
-      Chart.stacked(chartData.properties.stacked === false ? false : true);
+      // Chart.stacked(chartData.properties.stacked === false ? false : true);
       break;
 
     case 'pareto':

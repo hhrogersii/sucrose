@@ -104,9 +104,6 @@ export default function scatter() {
       };
 
       function resetScale() {
-        console.log('xDomain: ', xDomain);
-        console.log('xExtent: ', d3.extent(seriesData.map(getX)));
-
         // WHEN GETX RETURN 1970, THIS FAILS, BECAUSE X IS A DATETIME SCALE
         // RESOLVE BY MAKING SURE GETX RETURN A DATE OBJECT WHEN X SCALE IS DATETIME
 
@@ -164,7 +161,7 @@ export default function scatter() {
               x.domain([x.domain()[0] - x.domain()[0] * 0.1, x.domain()[1] + x.domain()[1] * 0.1]) :
               x.domain([-1, 1]);
         }
-console.log('x.domain(): ', x.domain());
+
         if (y.domain()[0] === y.domain()[1]) {
           y.domain()[0] ?
               y.domain([y.domain()[0] - y.domain()[0] * 0.1, y.domain()[1] + y.domain()[1] * 0.1]) :

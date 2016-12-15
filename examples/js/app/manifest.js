@@ -685,8 +685,8 @@ var Manifest =
     } else {
       // raw data from Report API
       Data = transformDataToD3(json, this.type);
-      this.colorLength = Data.properties.colorLength || Data.data.length;
-      postProcessData(Data, this.type, this.Chart);
+      this.colorLength = Data.properties ? Data.properties.colorLength : Data.data ? Data.data.length : 0;
+      // postProcessData(Data, this.type, this.Chart);
     }
   },
 

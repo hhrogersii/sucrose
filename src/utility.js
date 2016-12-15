@@ -599,6 +599,34 @@ utility.isValidDate = function(d) {
   return testDate instanceof Date && !isNaN(testDate.valueOf());
 };
 
+utility.getDateFormat = function(values) {
+  var dateFormats = ['multi', '.%L', ':%S', '%I:%M', '%I %p', '%x', '%b %d', '%B', '%Y']; //TODO: use locality format strings mmmmY, etc.
+  var formatIndex = 0;
+
+  formatIndex = values.length ? d3.min(values, function(d) {
+      var date = new Date(d.valueOf() + d.getTimezoneOffset() * 60000);
+      var format;
+      if (d3.timeSecond(date) < d) {
+        format = 1;
+      } else if (d3.timeMinute(date) < d) {
+        format = 2;
+      } else if (d3.timeHour(date) < d) {
+        format = 3;
+      } else if (d3.timeDay(date) < d) {
+        format = 4;
+      } else if (d3.timeMonth(date) < d) {
+        format = 5;
+        // format = (d3.timeWeek(date) < date ? 4 : 5);
+      } else if (d3.timeYear(date) < d) {
+        format = 6;
+      } else {
+        format = 8;
+      }
+      return format;
+    }) : 0;
+  return dateFormats[formatIndex];
+};
+
 utility.dateFormat = function(d, p, l) {
   var dateString, date, locale, spec, fmtr;
 
