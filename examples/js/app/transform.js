@@ -1,11 +1,11 @@
 
 function transformDataToD3(json, chartType, barType) {
-console.log('json: ', json);
+// console.log('json: ', json);
   var data = [],
       seriesData,
       properties = json.properties ? Array.isArray(json.properties) ? json.properties[0] : json.properties : {},
       value = 0,
-      strNoLabel = 'undefined',
+      strNoLabel = 'Undefined',
       valuesExist = true,
       valuesAreArrays = false,
       valuesAreDiscrete = false,
@@ -13,16 +13,14 @@ console.log('json: ', json);
       groupLabels = properties.groups || json.label || properties.labels || properties.label || [],
       groups = [];
 
-
   var xIsDatetime = properties.xDataType === 'datetime' || false,
       xIsOrdinal = properties.xDataType === 'ordinal' || false,
       xIsNumeric = properties.xDataType === 'numeric' || false,
       yIsCurrency = properties.yDataType === 'currency' || false;
 
   function pickLabel(d) {
-    // d can be [d] or 'd'
-    var l = [].concat(d.label || d)[0];
-    return l ? l : strNoLabel;
+    // d can be {label:'abc'} ['abc'] or 'abc'
+    return (d.hasOwnProperty('label') ? d.label : String(d)) || strNoLabel;
   }
 
   function getGroup(d, i) {
@@ -46,12 +44,10 @@ console.log('json: ', json);
 
   function hasValues(d) {
     //true => [{}, {}] || [[], []]
-    console.log('d: ', d);
     return d && d.filter(function(d1) { return d1.values && d1.values.length; }).length > 0;
   }
 
   function dataHasValues(type, d) {
-    console.log('type: ', type);
       var valueTypes = ['multibar', 'line', 'area', 'pie', 'funnel', 'gauge'];
       return valueTypes.indexOf(type) !== -1 && hasValues(d);
   }
@@ -131,14 +127,46 @@ console.log('json: ', json);
     data = json.data;
   }
 
-console.log('data: ', data);
+// console.log('data: ', data);
 
   valuesExist = dataHasValues(chartType, data);
 
-console.log('valuesExist: ', valuesExist);
+// console.log('valuesExist: ', valuesExist);
 
   if (valuesExist) {
     // json.values => [[],[]] or [{},{}]
+
+    var formatX =
+      xIsDatetime ?
+        function(d, i, j) {
+          // x => 1970, x => '1/1/1980', x => '1980-1-1', x => 1138683600000
+          // if the date value provided is a year
+          // append day and month parts to get correct UTC offset
+          // x = x + '-1-1';
+          // else if x is an integer date then treating as integer
+          // is ok because xDataType will force formatting on render
+          return new Date(d.toString().length === 4 ? '1/1/' + d.toString() : d);
+        } :
+        xIsOrdinal ?
+          areDiscreteValues(data) ?
+            // expand x for each series
+            // [['a'],['b'],['c']] =>
+            // [[0,'a'],[1,'b'],[2,'c']]
+            function(d, i, j) {
+              return i + 1;
+            } :
+            // convert flat array to indexed arrays
+            // [['a','b'],['c','d']] => [[[0,'a'],[1,'b']],[[0,'c'],[1,'d']]]
+            function(d, i, j) {
+              return j + 1;
+            } :
+        xIsNumeric ?
+          function(d, i, j) {
+            return parseFloat(d);
+          } :
+          function(d) {
+            return d;
+          };
 
     switch (chartType) {
 
@@ -151,22 +179,23 @@ console.log('valuesExist: ', valuesExist);
                 return i === j ? sumValues(e.values) : 0;
               };
 
-        data = barType === 'stacked' || barType === 'grouped' ?
-          json.label.map(function(d, i) {
-            return {
-              key: getKey(d),
-              type: 'bar',
-              disabled: d.disabled || false,
-              values: json.values.map(function(e, j) {
-                  return {
-                    series: i,
-                    x: j + 1,
-                    y: formatSeries(e, i, j),
-                    y0: 0
-                  };
-                })
-            };
-          }) :
+        data =
+        // barType === 'stacked' || barType === 'grouped' ?
+        //   groupLabels.map(function(d, i) {
+        //     return {
+        //       key: getKey(d),
+        //       type: 'bar',
+        //       disabled: d.disabled || false,
+        //       values: json.values.map(function(e, j) {
+        //           return {
+        //             series: i,
+        //             x: j + 1,
+        //             y: formatSeries(e, i, j),
+        //             y0: 0
+        //           };
+        //         })
+        //     };
+        //   }) :
           json.values.map(function(d, i) {
             return {
               key: d.values.length > 1 ? d.label : pickLabel(d), //TODO: replace with getKey
@@ -219,38 +248,6 @@ console.log('valuesExist: ', valuesExist);
 
       case 'area':
       case 'line':
-
-        var formatX =
-          xIsDatetime ?
-            function(d, i, j) {
-              // x => 1970, x => '1/1/1980', x => '1980-1-1', x => 1138683600000
-              // if the date value provided is a year
-              // append day and month parts to get correct UTC offset
-              // x = x + '-1-1';
-              // else if x is an integer date then treating as integer
-              // is ok because xDataType will force formatting on render
-              return new Date(d.toString().length === 4 ? '1/1/' + d.toString() : d);
-            } :
-            xIsOrdinal ?
-              areDiscreteValues(data) ?
-                // expand x for each series
-                // [['a'],['b'],['c']] =>
-                // [[0,'a'],[1,'b'],[2,'c']]
-                function(d, i, j) {
-                  return i + 1;
-                } :
-                // convert flat array to indexed arrays
-                // [['a','b'],['c','d']] => [[[0,'a'],[1,'b']],[[0,'c'],[1,'d']]]
-                function(d, i, j) {
-                  return j + 1;
-                } :
-            xIsNumeric ?
-              function(d, i, j) {
-                return parseFloat(d);
-              } :
-              function(d) {
-                return d;
-              };
 
         // convert array of arrays into array of objects
         data.forEach(function(s, i) {

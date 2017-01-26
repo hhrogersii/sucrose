@@ -503,13 +503,22 @@ export default function axis() {
         var tickSpacing = getTickSpacing();
 
         tickText.each(function(d, i) {
-          var textContent = axis.tickFormat()(d, i, selection, true),
-              textNode = d3.select(this),
-              isDate = utility.isValidDate(textContent),
-              textArray = (textContent && textContent !== '' ? isDate ? textContent : textContent.replace('/', '/ ') : []).split(' '),
-              i = 0,
-              l = textArray.length,
-              dy = reflect === 1 ? 0.71 : -1; // TODO: wrong. fails on reflect with 3 lines of wrap
+          var textContent = axis.tickFormat()(d, i, selection, true);
+          var textNode = d3.select(this);
+          var isDate = utility.isValidDate(textContent);
+          var dy = reflect === 1 ? 0.71 : -1; // TODO: wrong. fails on reflect with 3 lines of wrap
+          var i = 0;
+          var l = 0;
+          var textArray = (
+                textContent && textContent !== '' ?
+                  (
+                    isDate ?
+                      textContent :
+                      textContent.replace('/', '/ ')
+                  ) :
+                  []
+              ).split(' ');
+          l = textArray.length;
 
           // reset the tick text conent
           this.textContent = '';
