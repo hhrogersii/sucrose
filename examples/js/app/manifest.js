@@ -287,7 +287,7 @@ var Manifest =
         if ($chart.hasClass('hide')) {
           return;
         }
-        console.log(chart)
+        // console.log(chart)
         chart.render();
       }).debounce(50) :
       (function (evt) {
@@ -684,7 +684,7 @@ var Manifest =
       this.colorLength = 0;
     } else {
       // raw data from Report API
-      Data = transformDataToD3(json, this.type);
+      Data = sucrose.transform(json, this.type);
       this.colorLength = Data.properties ? Data.properties.colorLength : Data.data ? Data.data.length : 0;
       // postProcessData(Data, this.type, this.Chart);
     }

@@ -9,3 +9,4 @@ export {default as utility} from './utility.js';
 export {default as tooltip} from './tooltip.js';
 export {default as models} from './models/models.js';
 export {default as charts} from './charts/charts.js';
+export {default as transform} from './transform.js';
