@@ -178,8 +178,8 @@ const transform = function(json, chartType, barType) {
             dateString += ' GMT';
           }
           var date = new Date(dateString);
-          return date.toUTCString();
-          // return date;
+          // return date.toUTCString();
+          return date;
         } :
         xIsOrdinal ?
           // valuesAreDiscrete ?
@@ -378,7 +378,7 @@ const transform = function(json, chartType, barType) {
     }
 
     // don't override json.properties entirely, just modify/append
-    // properties.colorLength = data.length;
+    properties.colorLength = data.length;
 
     if (groupLabels.length) {
       properties.groups = groupLabels.map(getGroup);

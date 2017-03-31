@@ -1188,4 +1188,4 @@ export default function paretoChart() {
   //============================================================
 
   return chart;
-};
+}

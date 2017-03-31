@@ -888,4 +888,4 @@ export default function stackeareaChart() {
   //============================================================
 
   return chart;
-};
+}

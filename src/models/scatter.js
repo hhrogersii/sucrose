@@ -46,6 +46,7 @@ export default function scatter() {
       pointActive = function(d) { return !d.notActive; }, // any points that return false will be filtered out
       padData = false, // If true, adds half a data points width to front and back, for lining up a line chart with a bar chart
       padDataOuter = 0.1, //outerPadding to imitate ordinal scale outer padding
+      direction = 'ltr',
       clipEdge = false, // if true, masks points within x and y scale
       delay = 0,
       duration = 300,
@@ -718,6 +719,12 @@ export default function scatter() {
   model.duration = function(_) {
     if (!arguments.length) { return duration; }
     duration = _;
+    return model;
+  };
+
+  model.direction = function(_) {
+    if (!arguments.length) { return direction; }
+    direction = _;
     return model;
   };
 

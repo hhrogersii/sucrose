@@ -297,7 +297,13 @@ var sucroseCharts = function () {
       clipEdge: false,
       _format: function format(chart, callback) {
         chart
-          .tooltipContent(function (key, x, y, e, graph) {
+          .tooltipContent(function (eo, graph) {
+            var key = eo.series.key,
+              // x = lines.x()(eo.point, eo.pointIndex),
+              // y = lines.y()(eo.point, eo.pointIndex);
+              x = eo.point.x,
+              y = eo.point.y;
+
             var val = sucrose.utility.numberFormatRound(parseInt(y, 10), 2, yIsCurrency, chart.locality());
             var content = '<p>Category: <b>' + key + '</b></p>' +
                           '<p>' + (yIsCurrency ? 'Amount' : 'Count') + ': <b>' + val + '</b></p>',
@@ -322,7 +328,7 @@ var sucroseCharts = function () {
                 y = eo.point.y,
                 x = (typeof eo.group._height !== 'undefined') ?
                       Math.abs(y * 100 / eo.group._height).toFixed(1) :
-                      xAxis.tickFormat()(eo.point.x);
+                      graph.xAxis.tickFormat()(eo.point.x);
 
             var val = sucrose.utility.numberFormatRound(y, 2, yIsCurrency, chart.locality()),
                 percent = sucrose.utility.numberFormatRound(x, 2, false, chart.locality());
@@ -591,7 +597,7 @@ function transformDataToD3(json, chartType, barType) {
       seriesData,
       properties = json.properties ? Array.isArray(json.properties) ? json.properties[0] : json.properties : {},
       value = 0,
-      strNoLabel = 'undefined',
+      strNoLabel = 'Undefined',
       valuesExist = true,
       valuesAreArrays = false,
       valuesAreDiscrete = false,
@@ -599,16 +605,14 @@ function transformDataToD3(json, chartType, barType) {
       groupLabels = properties.groups || json.label || properties.labels || properties.label || [],
       groups = [];
 
-
   var xIsDatetime = properties.xDataType === 'datetime' || false,
       xIsOrdinal = properties.xDataType === 'ordinal' || false,
       xIsNumeric = properties.xDataType === 'numeric' || false,
       yIsCurrency = properties.yDataType === 'currency' || false;
 
   function pickLabel(d) {
-    // d can be [d] or 'd'
-    var l = [].concat(d.label || d)[0];
-    return l ? l : strNoLabel;
+    // d can be {label:'abc'} ['abc'] or 'abc'
+    return (d.hasOwnProperty('label') ? d.label : String(d)) || strNoLabel;
   }
 
   function getGroup(d, i) {

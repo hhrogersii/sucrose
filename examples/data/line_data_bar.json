@@ -2,15 +2,9 @@
   "properties": {
     "title": "Total is 122",
     "groups": [
-      {
-        "label": "New"
-      },
-      {
-        "label": "Assigned"
-      },
-      {
-        "label": "Pending Input"
-      }
+      {"label": "New"},
+      {"label": "Assigned"},
+      {"label": "Pending Input"}
     ],
     "xDataType": "ordinal",
     "yDataType": "numeric"

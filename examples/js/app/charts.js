@@ -134,7 +134,7 @@ var sucroseCharts = function () {
       },
       showTitle: true,
       showLegend: true,
-      showControls: true,
+      showControls: false,
       strings: {
         legend: {close: 'Hide legend', open: 'Show legend'},
         controls: {close: 'Hide controls', open: 'Show controls'},
@@ -255,7 +255,11 @@ var sucroseCharts = function () {
       clipEdge: false,
       _format: function format(chart, callback) {
         chart
-          .tooltipContent(function (key, x, y, e, graph) {
+          .tooltipContent(function (eo, graph) {
+            var key = eo.series.key,
+              x = eo.point.x,
+              y = eo.point.y;
+
             var val = sucrose.utility.numberFormatRound(parseInt(y, 10), 2, yIsCurrency, chart.locality());
             var content = '<p>Category: <b>' + key + '</b></p>' +
                           '<p>' + (yIsCurrency ? 'Amount' : 'Count') + ': <b>' + val + '</b></p>',
@@ -280,7 +284,7 @@ var sucroseCharts = function () {
                 y = eo.point.y,
                 x = (typeof eo.group._height !== 'undefined') ?
                       Math.abs(y * 100 / eo.group._height).toFixed(1) :
-                      xAxis.tickFormat()(eo.point.x);
+                      graph.xAxis.tickFormat()(eo.point.x);
 
             var val = sucrose.utility.numberFormatRound(y, 2, yIsCurrency, chart.locality()),
                 percent = sucrose.utility.numberFormatRound(x, 2, false, chart.locality());

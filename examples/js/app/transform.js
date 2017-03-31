@@ -128,7 +128,7 @@ function transformDataToD3(json, chartType, barType) {
   }
 
 // console.log('data: ', data);
-
+  valuesAreDiscrete = areDiscreteValues(data);
   valuesExist = dataHasValues(chartType, data);
 
 // console.log('valuesExist: ', valuesExist);
@@ -148,7 +148,7 @@ function transformDataToD3(json, chartType, barType) {
           return new Date(d.toString().length === 4 ? '1/1/' + d.toString() : d);
         } :
         xIsOrdinal ?
-          areDiscreteValues(data) ?
+          valuesAreDiscrete ?
             // expand x for each series
             // [['a'],['b'],['c']] =>
             // [[0,'a'],[1,'b'],[2,'c']]
@@ -170,8 +170,8 @@ function transformDataToD3(json, chartType, barType) {
 
     switch (chartType) {
 
-      case 'bar':
-        var formatSeries = (barType === 'stacked' || barType === 'grouped') ?
+      case 'multibar':
+        var formatSeries = (barType === 'stacked' || barType === 'grouped') && !valuesAreDiscrete ?
               function(e, i, j) {
                 return parseFloat(e.values[i]) || 0;
               } :
@@ -179,26 +179,10 @@ function transformDataToD3(json, chartType, barType) {
                 return i === j ? sumValues(e.values) : 0;
               };
 
-        data =
-        // barType === 'stacked' || barType === 'grouped' ?
-        //   groupLabels.map(function(d, i) {
-        //     return {
-        //       key: getKey(d),
-        //       type: 'bar',
-        //       disabled: d.disabled || false,
-        //       values: json.values.map(function(e, j) {
-        //           return {
-        //             series: i,
-        //             x: j + 1,
-        //             y: formatSeries(e, i, j),
-        //             y0: 0
-        //           };
-        //         })
-        //     };
-        //   }) :
-          json.values.map(function(d, i) {
+        data = barType === 'stacked' || barType === 'grouped' ?
+          groupLabels.map(function(d, i) {
             return {
-              key: d.values.length > 1 ? d.label : pickLabel(d), //TODO: replace with getKey
+              key: getKey(d),
               type: 'bar',
               disabled: d.disabled || false,
               values: json.values.map(function(e, j) {
@@ -210,7 +194,20 @@ function transformDataToD3(json, chartType, barType) {
                   };
                 })
             };
-          });
+          }) :
+          [{
+            key: d.values.length > 1 ? d.label : pickLabel(d), //TODO: replace with getKey
+            type: 'bar',
+            disabled: d.disabled || false,
+            values: json.values.map(function(e, j) {
+                return {
+                  series: i,
+                  x: j + 1,
+                  y: sumValues(e.values),
+                  y0: 0
+                };
+              })
+          }];
         break;
 
       case 'pie':

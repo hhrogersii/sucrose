@@ -579,4 +579,4 @@ export default function pieChart() {
   //============================================================
 
   return chart;
-};
+}
