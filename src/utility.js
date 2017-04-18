@@ -3,7 +3,6 @@ import d3 from 'd3';
 /*-------------------
       UTILITIES
 -------------------*/
-
 const utility = {};
 
 utility.strip = function(s) {
@@ -150,7 +149,6 @@ utility.defaultColor = function () {
   };
 };
 
-
 // Returns a color function that takes the result of 'getKey' for each series and
 // looks for a corresponding color from the dictionary,
 utility.customTheme = function (dictionary, getKey, defaultColors) {
@@ -171,8 +169,6 @@ utility.customTheme = function (dictionary, getKey, defaultColors) {
     }
   };
 };
-
-
 
 // From the PJAX example on d3js.org, while this is not really directly needed
 // it's a very cool method for doing pjax, I may expand upon it a little bit,
@@ -229,9 +225,6 @@ utility.optionsFunc = function(args) {
   }
   return this;
 };
-
-
-//SUGAR ADDITIONS
 
 //gradient color
 utility.colorLinearGradient = function (d, i, p, c, defs) {

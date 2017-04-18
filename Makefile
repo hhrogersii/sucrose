@@ -18,6 +18,7 @@ CSS_MINIFIER = \
 list:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
 
+
 #----------
 #PRODUCTION
 
@@ -51,10 +52,17 @@ all: sucrose.min.js sucrose.min.css
 clean: clean-js clean-css
 
 # Javascript
-js: sucrose.js sucrose.min.js
+js: sc nv
+clean-js:
+	rm -rf ./build/sucrose.js ./build/sucrose.min.js
+	rm -rf ./build/nv.d3.js ./build/nv.d3.min.js
+
+sc: sucrose.min.js
+sucrose:
+	rollup -c rollup.config.js --environment BUILD:sc,DEV:true
 sucrose.js:
 	rm -f ./build/$@
-	rollup -c
+	rollup -c rollup.config.js --environment BUILD:sc,DEV:false
 	cat src/header ./build/$@ > temp
 	mv temp ./build/$@
 sucrose.min.js: sucrose.js
@@ -62,14 +70,28 @@ sucrose.min.js: sucrose.js
 	cat ./build/$^ | $(JS_MINIFIER) >> ./build/$@
 	cat src/header ./build/$@ > temp
 	mv temp ./build/$@
-clean-js:
-	rm -rf ./build/sucrose.js ./build/sucrose.min.js
+
+nv: nv.d3.min.js
+nv.d3:
+	rollup -c rollup.nvd3.js --environment BUILD:nv,DEV:true
+nv.d3.js:
+	rm -f ./build/$@
+	rollup -c rollup.nvd3.js --environment BUILD:nv,DEV:false
+	cat src/header ./build/$@ > temp
+	mv temp ./build/$@
+nv.d3.min.js: nv.d3.js
+	rm -f ./build/$@
+	cat ./build/$^ | $(JS_MINIFIER) >> ./build/$@
+	cat src/header ./build/$@ > temp
+	mv temp ./build/$@
+
 
 # Stylesheets
 css: clean-css sucrose.css sucrose.min.css
 sucrose.css: $(CSS_FILES)
 	rm -f ./build/$@
 	node $(CSS_COMPILER) $(CSS_FILES) ./build/$@
+	# --modify-var="sc-css-prefixd=sc"
 	cat src/header ./build/$@ > temp
 	mv temp ./build/$@
 sucrose.min.css: sucrose.css
@@ -85,13 +107,13 @@ clean-css:
 #---------
 # EXAMPLES
 
-examples: npm-prod
+examples-prod: npm-prod
 	cd examples && make install-prod
 
 examples-dev: npm-dev
 	cd examples && make install-dev
 
-examples-sucrose: js css
+examples-sucrose: sc css
 	cd examples && make sucrose
 
 reset:
@@ -101,8 +123,6 @@ reset:
 #----
 # RUN
 
-rolls:
-	rollup -c
 nodes: packs
 	node rollup.node
 grade:
