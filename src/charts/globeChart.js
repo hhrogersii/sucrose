@@ -544,7 +544,7 @@ export default function globeChart() {
         };
         classes = function(d, i) {
           var iClass = (i * (params.step || 1)) % 14;
-          iClass = (iClass > 9 ? '' : '0') + iClass; //TODO: use d3.formatNumber
+          iClass = (iClass > 9 ? '' : '0') + iClass; //TODO: use d3.format
           return 'sc-country-' + i + ' sc-fill' + iClass;
         };
         break;

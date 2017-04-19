@@ -17,7 +17,7 @@ export default function lineWithFocusChart() {
     , x2Axis = utility.axis()
     , y2Axis = utility.axis()
     , legend = utility.legend()
-    , brush = d3.svg.brush()
+    , brush = d3.brush()
     ;
 
   var margin = {top: 30, right: 30, bottom: 30, left: 60}

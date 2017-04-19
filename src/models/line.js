@@ -50,7 +50,7 @@ export default function line() {
             interpolate === 'linear' ? d3.curveLinear :
             interpolate === 'cardinal' ? d3.curveCardinal :
             interpolate === 'monotone' ? d3.curveMonotoneX :
-            interpolate === 'basis' ? d3.curveBasis : d3.natural;
+            interpolate === 'basis' ? d3.curveBasis : d3.curveNatural;
 
       var area = d3.area()
             .curve(curve)

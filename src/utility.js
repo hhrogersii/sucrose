@@ -536,7 +536,6 @@ utility.createTexture = function(defs, id, x, y) {
   //     p = typeof p === 'undefined' ? 2 : p;
   //     c = typeof c === 'undefined' ? false : !!c;
   //     fmtr = typeof l === 'undefined' ? d3.format : d3.formatLocale(l).format;
-  //     // d = d3.round(d, p);
   //     d = Math.round(d * 10 * p) / 10 * p;
   //     spec = c ? '$,' : ',';
   //     if (c && d < 1000 && d !== parseInt(d, 10)) {
@@ -569,6 +568,12 @@ utility.numberFormatSI = function(d, p, c, l) {
     return fmtr(spec)(d);
   }
   return fmtr(spec)(d);
+};
+
+utility.round = function(x, n) {
+  // Sigh...
+  var ten_n = Math.pow(10,n);
+  return Math.round(x * ten_n) / ten_n;
 };
 
 utility.numberFormatRound = function(d, p, c, l) {
