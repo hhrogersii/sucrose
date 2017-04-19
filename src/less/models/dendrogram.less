@@ -2,21 +2,21 @@
 * Dendrogram
 */
 
-.sc-card {
+.@{sc-css-prefix}-card {
   fill: #E9EFEF;
   stroke: #AAA;
   stroke-width: .5px;
-  .sc-circ-front {
+  .@{sc-css-prefix}-circ-front {
     stroke-width: 0;
   }
   line {
     stroke-width: 2;
   }
-  .sc-expcoll {
+  .@{sc-css-prefix}-expcoll {
     cursor: pointer;
   }
 }
-.sc-tree {
+.@{sc-css-prefix}-tree {
   path.link {
     fill: none;
     stroke: #ccc;
@@ -26,13 +26,13 @@
 
 
 // for org chart demo renderer
-.sc-chart-org {
-  .sc-chart-background {
+.@{sc-css-prefix}-chart-org {
+  .@{sc-css-prefix}-chart-background {
     stroke: darken(@grayLighter, 15%);
     stroke-width: 2px;
   }
 }
-.sc-org-node {
+.@{sc-css-prefix}-org-node {
   text {
     font-style: normal;
     font-variant: normal;
@@ -41,14 +41,14 @@
     font-size: 10px;
     line-height: normal;
     font-family: "Helvetica Neue", Arial, sans-serif;
-    &.sc-org-name {
+    &.@{sc-css-prefix}-org-name {
       font-size: 10px;
       fill: @linkColor;
       &.hover {
         text-decoration: underline;
       }
     }
-    &.sc-org-title {
+    &.@{sc-css-prefix}-org-title {
       font-size: 8px;
     }
   }

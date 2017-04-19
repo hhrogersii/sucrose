@@ -2,40 +2,40 @@
 *  Stacked Area
 */
 
-.sc-chart-stackedarea {
-  path.sc-area {
+.@{sc-css-prefix}-chart-stackedarea {
+  path.@{sc-css-prefix}-area {
     fill-opacity: .7;
     stroke-opacity: 0;
   }
 
-  path.sc-area.hover {
+  path.@{sc-css-prefix}-area.hover {
     fill-opacity: .9;
   }
 
-  // .sc-series .sc-point {
+  // .@{sc-css-prefix}-series .@{sc-css-prefix}-point {
   //   stroke-opacity: 0;
   //   fill-opacity: 0;
   // }
 
-  .sc-guide-wrap .sc-series {
-    .sc-line,
-    .sc-point {
+  .@{sc-css-prefix}-guide-wrap .@{sc-css-prefix}-series {
+    .@{sc-css-prefix}-line,
+    .@{sc-css-prefix}-point {
       pointer-events: none;
       stroke: #777;
       fill-opacity: 0;
       stroke-opacity: 0;
     }
-    .sc-line {
+    .@{sc-css-prefix}-line {
       stroke-width: 1.5px;
     }
-    .sc-point {
+    .@{sc-css-prefix}-point {
       stroke-width: 1px;
       fill: #FFF;
     }
   }
-  .sc-guide-wrap.hover .sc-series {
-    .sc-line,
-    .sc-point {
+  .@{sc-css-prefix}-guide-wrap.hover .@{sc-css-prefix}-series {
+    .@{sc-css-prefix}-line,
+    .@{sc-css-prefix}-point {
       fill-opacity: 1;
       stroke-opacity: 1;
     }

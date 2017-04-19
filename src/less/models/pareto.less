@@ -3,40 +3,40 @@
 * Pareto
 */
 
-.sc-chart-pareto {
-  .sc-quota-wrap line {
+.@{sc-css-prefix}-chart-pareto {
+  .@{sc-css-prefix}-quota-wrap line {
     opacity: .8;
     stroke: #444;
     stroke-width: 4px;
     fill: none;
     /*stroke-dasharray: '20, 5'; dashed lines must be defined in JS*/
   }
-  .sc-quota-wrap line.sc-quota-target {
+  .@{sc-css-prefix}-quota-wrap line.@{sc-css-prefix}-quota-target {
     stroke: #777;
   }
-  .sc-quota-wrap line.sc-quota-background {
+  .@{sc-css-prefix}-quota-wrap line.@{sc-css-prefix}-quota-background {
     opacity: 0;
     stroke-width: 12px;
   }
-  .sc-axis-y .domain {
+  .@{sc-css-prefix}-axis-y .domain {
     display: none;
   }
-  .sc-axis-y text.sc-quota-value,
-  .sc-axis-y text.sc-target-quota-value {
+  .@{sc-css-prefix}-axis-y text.@{sc-css-prefix}-quota-value,
+  .@{sc-css-prefix}-axis-y text.@{sc-css-prefix}-target-quota-value {
     font-weight: bold;
   }
-  .sc-line .sc-group path {
+  .@{sc-css-prefix}-line .@{sc-css-prefix}-group path {
     stroke-width: 4px;
   }
-  .sc-lines-wrap1 .sc-line .sc-group path {
+  .@{sc-css-prefix}-lines-wrap1 .@{sc-css-prefix}-line .@{sc-css-prefix}-group path {
     stroke-width: 6px;
   }
-  .sc-scatter .sc-group .sc-point {
+  .@{sc-css-prefix}-scatter .@{sc-css-prefix}-group .@{sc-css-prefix}-point {
     fill-opacity: 1;
     stroke-opacity: 1;
     stroke-width: 2px;
   }
-  .sc-lines-wrap2 .sc-scatter .sc-group circle {
+  .@{sc-css-prefix}-lines-wrap2 .@{sc-css-prefix}-scatter .@{sc-css-prefix}-group circle {
     stroke: @white;
   }
 }

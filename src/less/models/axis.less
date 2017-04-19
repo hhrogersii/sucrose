@@ -2,39 +2,39 @@
 *  Axis
 */
 
-.sc-axis path,
-.sc-axis line,
-.sc-axis polyline {
+.@{sc-css-prefix}-axis path,
+.@{sc-css-prefix}-axis line,
+.@{sc-css-prefix}-axis polyline {
   fill: none;
   stroke: @chartTickColor;
   stroke-width: @chartTickWidth;
   shape-rendering: crispEdges;
   pointer-events: none;
 }
-.sc-axis line,
-.sc-axis polyline {
+.@{sc-css-prefix}-axis line,
+.@{sc-css-prefix}-axis polyline {
   stroke-opacity: .3;
 }
-.sc-axis path,
-.sc-axis line.zero {
+.@{sc-css-prefix}-axis path,
+.@{sc-css-prefix}-axis line.zero {
   stroke-opacity: .75;
 }
-.sc-axis path.domain {
+.@{sc-css-prefix}-axis path.domain {
   stroke-width: 2px;
   stroke: #bbb;
 }
 
-.sc-axis .sc-axisMaxMin text {
+.@{sc-css-prefix}-axis .@{sc-css-prefix}-axisMaxMin text {
   font-weight: bold;
 }
-// .sc-axis .sc-axisMaxMin line {
+// .@{sc-css-prefix}-axis .@{sc-css-prefix}-axisMaxMin line {
 //   stroke-opacity: .75;
 // }
-.sc-x.sc-axis text {
+.@{sc-css-prefix}-x.@{sc-css-prefix}-axis text {
   font-size: @chartTextSize;
 }
 
-.sc-axislabel {
+.@{sc-css-prefix}-axislabel {
   font-weight: 900;
   font-style: italic;
 }
