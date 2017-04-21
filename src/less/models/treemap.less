@@ -2,7 +2,7 @@
 * Treemap
 */
 
-.sc-treemap {
+.@{sc-css-prefix}-treemap {
   background-color: @white;
 
   text {
@@ -13,28 +13,28 @@
     stroke: @white;
   }
 
-  .sc-treepath text {
+  .@{sc-css-prefix}-treepath text {
     font-weight: bold;
     fill: @gray;
   }
-  .sc-parent text {
+  .@{sc-css-prefix}-parent text {
     fill: @white;
   }
-  .sc-child {
+  .@{sc-css-prefix}-child {
     stroke-width: 1px;
   }
 
-  .sc-target {
+  .@{sc-css-prefix}-target {
     stroke-width: 3px;
     fill: none;
     font-weight: normal;
     cursor: pointer;
     pointer-events: all;
   }
-  .sc-treepath .sc-target {
+  .@{sc-css-prefix}-treepath .@{sc-css-prefix}-target {
     fill: @white;
   }
-  .sc-parent.hover .sc-target {
+  .@{sc-css-prefix}-parent.hover .@{sc-css-prefix}-target {
     fill: @white;
     opacity: 0.3;
   }
