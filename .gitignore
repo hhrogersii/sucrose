@@ -1,7 +1,12 @@
 .idea
 .DS_Store
 devdocs
-node_modules
+/*
+!/node_modules
+/node_modules/*
+!/node_modules/d3v4
+/node_modules/d3v4/node_modules
+/node_modules/d3v4/img
 build/d3.js
 build/d3.min.js
 build/topojson.js
