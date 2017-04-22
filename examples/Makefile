@@ -70,7 +70,7 @@ clean-sucrose:
 
 lib: $(LIB_FILES) clean-lib
 	# copy node module files
-	cp ../node_modules/d3/build/d3.min.js js/d3.min.js
+	cp ../build/d3v4.min.js js/d3v4.min.js
 	cp ../node_modules/topojson/build/topojson.min.js js/topojson.min.js
 	cp ../node_modules/d3fc-rebind/build/d3fc-rebind.min.js js/d3fc-rebind.min.js
 	cp node_modules/jquery/dist/jquery.min.js js/jquery.min.js
@@ -80,7 +80,7 @@ lib: $(LIB_FILES) clean-lib
 	cat $(LIB_FILES) | $(JS_MINIFIER) >> js/lib.min.js
 
 clean-lib:
-	rm -rf js/d3.min.js js/topojson.min.js js/d3fc-rebind.min.js
+	rm -rf js/d3v4.min.js js/topojson.min.js js/d3fc-rebind.min.js
 	rm -rf js/jquery.min.js js/jquerymy.min.js
 	rm -rf js/lib.js js/lib.min.js
 
