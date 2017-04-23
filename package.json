@@ -35,7 +35,7 @@
     "test": "tape 'test/**/*-test.js'"
   },
   "dependencies": {
-    "d3": "^4.2.1",
+    "d3v4": "^4.8.0",
     "d3fc-rebind": "^4.0.1",
     "topojson": "^1.6.26"
   },
@@ -45,7 +45,10 @@
     "json2module": "0.0.3",
     "less": "^2.6.0",
     "less-plugin-clean-css": "^1.5.1",
+    "package-preamble": "0.0.2",
     "rollup": "^0.36.3",
+    "rollup-plugin-ascii": "0.0.3",
+    "rollup-plugin-cleanup": "^1.0.0",
     "rollup-plugin-eslint": "^3.0.0",
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-replace": "^1.1.1",

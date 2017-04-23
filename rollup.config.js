@@ -7,7 +7,10 @@ export default {
   dest: './build/sucrose.js',
   format: 'umd',
   // sourceMap: 'inline',
-  external: ['d3', 'd3fc-rebind'],
+  external: [
+    'd3v4',
+    'd3fc-rebind',
+  ],
   // treeshake: false,
   plugins: [
     replace({
@@ -24,7 +27,7 @@ export default {
     }),
   ],
   globals: {
+    'd3v4': 'd3v4',
     'd3fc-rebind': 'fc',
-    'd3': 'd3',
   },
 };

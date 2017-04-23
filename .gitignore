@@ -2,12 +2,8 @@
 .DS_Store
 devdocs
 node_modules
-build/d3.js
-build/d3.min.js
 build/topojson.js
 build/topojson.min.js
-build/d3fc-rebind.js
-build/d3fc-rebind.min.js
 examples/css/sucrose.css
 examples/css/sucrose.min.css
 examples/data/geo/natural_earth
