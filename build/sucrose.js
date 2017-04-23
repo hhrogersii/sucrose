@@ -2,9 +2,9 @@
  * Copyright (c) 2017 SugarCRM Inc. Licensed by SugarCRM under the Apache 2.0 license.
  */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3'), require('d3fc-rebind')) :
-	typeof define === 'function' && define.amd ? define(['exports', 'd3', 'd3fc-rebind'], factory) :
-	(factory((global.sucrose = global.sucrose || {}),global.d3,global.fc));
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3v4'), require('d3fc-rebind')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'd3v4', 'd3fc-rebind'], factory) :
+	(factory((global.sucrose = global.sucrose || {}),global.d3v4,global.fc));
 }(this, (function (exports,d3,fc) { 'use strict';
 
 d3 = 'default' in d3 ? d3['default'] : d3;
@@ -548,7 +548,6 @@ utility.createTexture = function(defs, id, x, y) {
   //     p = typeof p === 'undefined' ? 2 : p;
   //     c = typeof c === 'undefined' ? false : !!c;
   //     fmtr = typeof l === 'undefined' ? d3.format : d3.formatLocale(l).format;
-  //     // d = d3.round(d, p);
   //     d = Math.round(d * 10 * p) / 10 * p;
   //     spec = c ? '$,' : ',';
   //     if (c && d < 1000 && d !== parseInt(d, 10)) {
@@ -581,6 +580,12 @@ utility.numberFormatSI = function(d, p, c, l) {
     return fmtr(spec)(d);
   }
   return fmtr(spec)(d);
+};
+
+utility.round = function(x, n) {
+  // Sigh...
+  var ten_n = Math.pow(10,n);
+  return Math.round(x * ten_n) / ten_n;
 };
 
 utility.numberFormatRound = function(d, p, c, l) {
@@ -4023,7 +4028,7 @@ function scatter() {
       classes = function(d, i) { return 'sc-series sc-series-' + d.seriesIndex; },
       x = d3.scaleLinear(),
       y = d3.scaleLinear(),
-      z = d3.scaleLinear(), //linear because d3.svg.shape.size is treated as area
+      z = d3.scaleLinear(), //linear because d3.symbol.size is treated as area
       getX = function(d) { return d.x; }, // accessor to get the x value
       getY = function(d) { return d.y; }, // accessor to get the y value
       getZ = function(d) { return d.size || 1; }, // accessor to get the point size, set by public method .size()
@@ -4292,7 +4297,7 @@ function scatter() {
         var points_enter = points_bind.enter().append('path')
               .attr('class', function(d, i) { return 'sc-point sc-enter sc-point-' + i; })
               .attr('d',
-                d3.svg.symbol()
+                d3.symbol()
                   .type(getShape)
                   .size(symbolSize)
               );
@@ -4311,7 +4316,7 @@ function scatter() {
               return 'translate(' + x(getX(d, i)) + ',' + y(getY(d, i)) + ')';
             })
             .attr('d',
-              d3.svg.symbol()
+              d3.symbol()
                 .type(getShape)
                 .size(symbolSize)
             );
@@ -4350,7 +4355,7 @@ function scatter() {
                 .map(function(point, pointIndex) {
                   // *Adding noise to make duplicates very unlikely
                   // *Injecting series and point index for reference
-                  /* *Adding a 'jitter' to the points, because there's an issue in d3.geom.voronoi.
+                  /* *Adding a 'jitter' to the points, because there's an issue in d3.voronoi.
                    */
                   var pX = getX(point, pointIndex);
                   var pY = getY(point, pointIndex);
@@ -4788,7 +4793,7 @@ function line() {
             interpolate === 'linear' ? d3.curveLinear :
             interpolate === 'cardinal' ? d3.curveCardinal :
             interpolate === 'monotone' ? d3.curveMonotoneX :
-            interpolate === 'basis' ? d3.curveBasis : d3.natural;
+            interpolate === 'basis' ? d3.curveBasis : d3.curveNatural;
 
       var area = d3.area()
             .curve(curve)
@@ -7325,7 +7330,7 @@ function stackearea() {
             interpolate === 'linear' ? d3.curveLinear :
             interpolate === 'cardinal' ? d3.curveCardinal :
             interpolate === 'monotone' ? d3.curveMonotoneX :
-            interpolate === 'basis' ? d3.curveBasis : d3.natural;
+            interpolate === 'basis' ? d3.curveBasis : d3.curveNatural;
 
       var stackOffset = [d3.stackOffsetNone, d3.stackOffsetWiggle, d3.stackOffsetExpand, d3.stackOffsetSilhouette]
                         [['zero', 'wiggle', 'expand', 'silhouette'].indexOf(offset)];
@@ -10998,7 +11003,7 @@ function globeChart() {
         };
         classes = function(d, i) {
           var iClass = (i * (params.step || 1)) % 14;
-          iClass = (iClass > 9 ? '' : '0') + iClass; //TODO: use d3.formatNumber
+          iClass = (iClass > 9 ? '' : '0') + iClass; //TODO: use d3.format
           return 'sc-country-' + i + ' sc-fill' + iClass;
         };
         break;
@@ -16934,8 +16939,9 @@ const charts = {
     treemapChart: treemapChart,
 };
 
-const dev = false; //set false when in production
-const build = 'sc'; //set false when in production
+// false & scr are substitution variables for rollup
+const dev = false; // set false when in production
+const build = 'scr'; // set sc for sucrose and sgr for Sugar
 
 exports.development = dev;
 exports.build = build;
